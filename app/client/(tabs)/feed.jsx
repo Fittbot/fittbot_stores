@@ -36,6 +36,7 @@ import HeaderComponent from "../../../components/ui/Header/HeaderComponent";
 import { useNavigation } from "../../../context/NavigationContext";
 import SideNavigation from "../../../components/ui/Header/SideNavigation";
 import { showToast } from "../../../utils/Toaster";
+import useEdgeSwipe from "../../../hooks/useEdgeSwipe";
 
 const { width } = Dimensions.get("window");
 const HEADER_MAX_HEIGHT = 245;
@@ -88,8 +89,30 @@ const Feed = () => {
     setShowBadgeSummary(false);
     setShowBadgeDetails(true);
   };
+  const {
+    panHandlers,
+    SwipeIndicator,
+    isSwipeActive,
+    isEnabled: swipeEnabled,
+    swipeAnimatedValue,
+    resetSwipe,
+    debug,
+    temporarilyDisableSwipe,
+  } = useEdgeSwipe({
+    onSwipeComplete: toggleSideNav,
+    isEnabled: true,
+    isBlocked: isSideNavVisible,
+    config: {
+      edgeSwipeThreshold: 30,
+      swipeMinDistance: 50,
+      swipeMinVelocity: 0.3,
+      preventIOSBackSwipe: true,
+    },
+  });
 
   const scrollToTab = (tabName) => {
+    temporarilyDisableSwipe();
+
     const tabIndex = [
       "My Feed",
       "Gym Announcements",
@@ -264,7 +287,7 @@ const Feed = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panHandlers}>
       {loading ? (
         <FitnessLoader page="feed" />
       ) : (
@@ -348,6 +371,8 @@ const Feed = () => {
             currentBadge={""}
             currentLevel={""}
           />
+
+          <SwipeIndicator />
         </>
       )}
     </View>

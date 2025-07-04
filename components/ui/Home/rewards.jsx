@@ -1,5 +1,4 @@
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -7,8 +6,8 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
-  Image,
   Platform,
+  Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Ionicons, AntDesign } from "@expo/vector-icons";
@@ -20,6 +19,9 @@ import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import EarnXP from "./EarnXp";
 import { showToast } from "../../../utils/Toaster";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+const { width } = Dimensions.get("window");
 
 const RewardHistoryModal = ({ visible, onClose, history }) => (
   <Modal visible={visible} animationType="slide" transparent>
@@ -114,9 +116,11 @@ const RewardCard = ({ item, selected, onPress }) => {
           style={styles.rewardImageBackground}
         >
           <Image
-            source={require("../../../assets/images/rewards_box 3.png")}
+            source={
+              item?.image || require("../../../assets/images/rewards_box 3.png")
+            }
             style={styles.rewardImage}
-            resizeMode="stretch"
+            contentFit="stretch"
           />
         </LinearGradient>
       </View>
@@ -136,7 +140,7 @@ const RewardCard = ({ item, selected, onPress }) => {
   );
 };
 
-const Rewards = () => {
+const Rewards = ({ setActiveTabHeader }) => {
   const [showRewardHistory, setShowRewardHistory] = useState(false);
   const [rewardHistory, setRewardHistory] = useState([]);
   const [quests, setQuests] = useState([]);
@@ -150,6 +154,7 @@ const Rewards = () => {
   const [selectedReward, setSelectedReward] = useState(null);
   const [rewardUpdate, setRewardUpdate] = useState(null);
   const [showRewardDetails, setShowRewardDetails] = useState(false);
+  const router = useRouter();
   const fetchRewardDetails = async () => {
     setloading(true);
     try {
@@ -224,8 +229,58 @@ const Rewards = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.icon}
+        onPress={() => {
+          setActiveTabHeader("My Progress");
+        }}
+      >
+        <Ionicons name="arrow-back-outline" color={"#fff"} size={24}></Ionicons>
+      </TouchableOpacity>
       <ScrollView>
+        <View style={styles.imageContainer}>
+          <Image
+            source={require("../../../assets/images/reward_cup.png")}
+            width={"100%"}
+            height={"100%"}
+            contentFit="cover"
+          />
+
+          <View
+            style={[
+              styles.badgeCard,
+              { paddingVertical: 10, paddingHorizontal: 15 },
+            ]}
+          >
+            <View style={styles.nextBadgeContainer}>
+              <MaskedView
+                maskElement={
+                  <Text style={{ fontSize: 11 }}>
+                    Just a few steps away from the '
+                    {badgeDetails?.next_badge_name}' badge!
+                  </Text>
+                }
+              >
+                <LinearGradient
+                  colors={["#030A15", "#0154A0"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ justifyContent: "center" }}
+                >
+                  <Text style={[{ opacity: 0, fontSize: 12 }]}>
+                    Just a few steps away from the '
+                    {badgeDetails?.next_badge_name}' badge!
+                  </Text>
+                </LinearGradient>
+              </MaskedView>
+              <Image
+                source={{ uri: badgeDetails?.next_badge_url }}
+                style={styles.smallBadgeIcon}
+              />
+            </View>
+          </View>
+        </View>
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[
@@ -297,9 +352,9 @@ const Rewards = () => {
               </View>
             )}
 
-            <View style={styles.badgeCard}>
+            <View style={styles.badgeCard2}>
               <LinearGradient
-                colors={["#FFFFFF", "rgba(1,84,160,0.3)"]}
+                colors={["#16144D", "#16144D"]}
                 start={{ x: 0, y: 0.2 }}
                 end={{ x: 1, y: 0.2 }}
                 style={{
@@ -318,7 +373,7 @@ const Rewards = () => {
                       }
                     >
                       <LinearGradient
-                        colors={["#030A15", "#0154A0"]}
+                        colors={["#fff", "#fff"]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0.4, y: 0 }}
                         style={{ justifyContent: "center" }}
@@ -348,7 +403,7 @@ const Rewards = () => {
                   <View style={styles.progressContainer}>
                     <View style={styles.progressBackground}>
                       <LinearGradient
-                        colors={["#030A15", "#0154A0"]}
+                        colors={["#fff", "#fff"]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={[
@@ -370,7 +425,7 @@ const Rewards = () => {
                         }
                       >
                         <LinearGradient
-                          colors={["#030A15", "#0154A0"]}
+                          colors={["#fff", "#fff"]}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 0.4, y: 0 }}
                           style={{ justifyContent: "center" }}
@@ -388,39 +443,6 @@ const Rewards = () => {
                 </View>
               </LinearGradient>
             </View>
-            <View
-              style={[
-                styles.badgeCard,
-                { paddingVertical: 5, paddingHorizontal: 15 },
-              ]}
-            >
-              <View style={styles.nextBadgeContainer}>
-                <MaskedView
-                  maskElement={
-                    <Text style={{ fontSize: 12 }}>
-                      Just a few steps away from the '
-                      {badgeDetails?.next_badge_name}' badge!
-                    </Text>
-                  }
-                >
-                  <LinearGradient
-                    colors={["#030A15", "#0154A0"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{ justifyContent: "center" }}
-                  >
-                    <Text style={[{ opacity: 0, fontSize: 12 }]}>
-                      Just a few steps away from the '
-                      {badgeDetails?.next_badge_name}' badge!
-                    </Text>
-                  </LinearGradient>
-                </MaskedView>
-                <Image
-                  source={{ uri: badgeDetails?.next_badge_url }}
-                  style={styles.smallBadgeIcon}
-                />
-              </View>
-            </View>
 
             {/* Rewards horizontal scrollable cards */}
             <View style={styles.rewardsSection}>
@@ -432,7 +454,7 @@ const Rewards = () => {
                 }
               >
                 <LinearGradient
-                  colors={["#030A15", "#0154A0"]}
+                  colors={["#fff", "#fff"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0.4, y: 0 }}
                   style={{ justifyContent: "center" }}
@@ -597,20 +619,25 @@ const Rewards = () => {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F7FA",
-    paddingTop: 10,
-    marginBottom: Platform.OS === "ios" ? 50 : 0,
+    backgroundColor: "#16144D",
+    position: "relative",
+    // paddingBottom: Platform.OS === "ios" ? 20 : 0,
   },
   infoContainer: {
     paddingHorizontal: 16,
     paddingVertical: 10,
+  },
+  imageContainer: {
+    width: width,
+    height: 450,
+    position: "relative",
   },
   infoBanner: {
     flexDirection: "row",
@@ -618,6 +645,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#EBF5FB",
     padding: 16,
     borderRadius: 8,
+  },
+  icon: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 1000,
   },
   infoIcon: {
     width: "10%",
@@ -632,7 +665,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    marginBottom: 8,
+    paddingTop: 50,
+    // marginBottom: 8,
     marginTop: Platform.OS === "ios" ? 10 : 0,
   },
   tabButton: {
@@ -643,7 +677,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "transparent",
   },
   activeTabButton: {
-    borderBottomColor: "#0154A0",
+    borderBottomColor: "#fff",
   },
   tabText: {
     fontSize: 14,
@@ -651,14 +685,18 @@ const styles = StyleSheet.create({
     color: "#777",
   },
   activeTabText: {
-    color: "#0154A0",
+    color: "#fff",
     fontWeight: "600",
   },
   badgeCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FFD373",
+    position: "absolute",
+    bottom: -50,
+    right: 0,
+    left: 0,
     borderRadius: 12,
     margin: 16,
-    shadowColor: "#000",
+    shadowColor: "#fff",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -669,6 +707,24 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginTop: 10,
   },
+
+  badgeCard2: {
+    borderColor: "rgba(255, 255, 255, 0.33)",
+    borderWidth: 0.5,
+    borderRadius: 12,
+    margin: 16,
+    shadowColor: "#ffffff",
+    shadowOffset: {
+      width: 1,
+      height: 1,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: "hidden",
+    marginTop: 18,
+  },
+
   badgeHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -709,7 +765,7 @@ const styles = StyleSheet.create({
   },
   progressBackground: {
     height: "100%",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -727,7 +783,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 20,
     fontSize: 14,
-    color: "#0154A0",
+    color: "#fff",
   },
   nextBadgeContainer: {
     flexDirection: "row",
@@ -745,17 +801,19 @@ const styles = StyleSheet.create({
   },
   // New reward cards styling
   rewardsSection: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#16144D",
     borderRadius: 12,
     margin: 16,
     padding: 15,
-    shadowColor: "#000",
+    shadowColor: "#ccc",
+    borderColor: "rgba(255, 255, 255, 0.33)",
+    borderWidth: 0.5,
     shadowOffset: {
-      width: 0,
-      height: 2,
+      width: 1,
+      height: 1,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     elevation: 2,
     marginHorizontal: 16,
     marginVertical: 12,
@@ -829,11 +887,13 @@ const styles = StyleSheet.create({
     color: "#0154A0",
   },
   historyContainer: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#16144D",
     borderRadius: 12,
     margin: 16,
     padding: 16,
     shadowColor: "#000",
+    borderColor: "rgba(255, 255, 255, 0.33)",
+    borderWidth: 0.5,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -848,14 +908,15 @@ const styles = StyleSheet.create({
   historyTitle: {
     fontSize: 14,
     fontWeight: "600",
+    color: "#fff",
   },
   historyListItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    borderWidth: 0.5,
+    borderColor: "#fff",
   },
   historyLeftContent: {
     flexDirection: "row",
@@ -867,15 +928,17 @@ const styles = StyleSheet.create({
   rewardItemTitle: {
     fontSize: 12,
     fontWeight: "500",
+    color: "#B4B4B4",
   },
   rewardItemDate: {
     fontSize: 12,
-    color: "#777",
+    color: "#fff",
     marginTop: 4,
   },
   rewardItemPoints: {
     fontSize: 12,
     fontWeight: "500",
+    color: "#fff",
   },
   loadMoreButton: {
     alignItems: "center",
@@ -977,6 +1040,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 12,
     marginVertical: 5,
+    color: "#fff",
   },
   centeredModalContainer: {
     flex: 1,

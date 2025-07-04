@@ -12,7 +12,11 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  FontAwesome5,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
@@ -64,14 +68,18 @@ const ExerciseCard = ({
   const [appState, setAppState] = useState(AppState.currentState);
   const appStateRef = useRef(AppState.currentState);
   const backgroundTimeRef = useRef(0);
-
+  const [prevSetsLength, setPrevSetsLength] = useState(0);
   useEffect(() => {
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
     }
 
-    if (hasSets && !expanded && exerciseState.sets?.length === 1) {
+    const currentSetsLength = exerciseState.sets?.length || 0;
+
+    // Auto-expand when sets are added to an exercise that previously had no sets
+    // This handles both play button (1 set added) and + button (multiple sets added)
+    if (hasSets && !expanded && prevSetsLength === 0 && currentSetsLength > 0) {
       setExpanded(true);
       Animated.timing(expandAnimation, {
         toValue: 1,
@@ -79,7 +87,10 @@ const ExerciseCard = ({
         useNativeDriver: false,
       }).start();
     }
-  }, [hasSets, exerciseState.sets?.length]);
+
+    // Update the previous sets length
+    setPrevSetsLength(currentSetsLength);
+  }, [hasSets, exerciseState.sets?.length, expanded, prevSetsLength]);
 
   const handleAppStateChange = useCallback(
     async (nextAppState) => {
@@ -211,70 +222,215 @@ const ExerciseCard = ({
     outputRange: [
       responsiveHeight(13),
       hasSets
-        ? responsiveHeight(13 + (exerciseState.sets?.length || 0) * 7 + 5)
+        ? responsiveHeight(13 + (exerciseState.sets?.length || 0) * 4 + 15)
         : responsiveHeight(18),
     ],
   });
 
+  const getSetNumberColor = (index) => {
+    const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FECA57"];
+    return colors[index % colors.length];
+  };
+
+  const formatDuration = (duration) => {
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+    return `${minutes}.${seconds.toString().padStart(2, "0")}`;
+  };
+
   const renderSetItem = ({ item: set, index: setIndex }) => (
-    <View style={styles.setItem}>
-      {isCardioExercise ? (
-        <View style={styles.setContent}>
-          <Text style={styles.setNumber}>{setIndex + 1}</Text>
-          <View style={styles.setDetails}>
-            <View style={styles.setMetric}>
-              <Ionicons name="stopwatch-outline" size={16} color="#183243" />
-              <Text style={styles.setMetricText}>{set.duration}s</Text>
-            </View>
-            <View style={styles.setMetric}>
-              <Ionicons name="flame-outline" size={16} color="#183243" />
-              <Text style={styles.setMetricText}>{set.calories} cal</Text>
-            </View>
-          </View>
-        </View>
-      ) : isMuscleGroupExercise ? (
-        <View style={styles.setContent}>
-          <Text style={styles.setNumber}>{setIndex + 1}</Text>
-          <View style={styles.setDetails}>
-            <View style={styles.setMetric}>
-              <Ionicons name="repeat" size={16} color="#183243" />
-              <Text style={styles.setMetricText}>{set.reps}</Text>
-            </View>
-            {!isBodyWeightExercise && (
-              <View style={styles.setMetric}>
-                <FontAwesome5 name="weight" size={14} color="#183243" />
-                <Text style={styles.setMetricText}>{set.weight}kg</Text>
-              </View>
-            )}
-            <View style={styles.setMetric}>
-              <Ionicons name="flame-outline" size={16} color="#183243" />
-              <Text style={styles.setMetricText}>{set.calories} cal</Text>
-            </View>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.setContent}>
-          <Text style={styles.setNumber}>{setIndex + 1}</Text>
-          <View style={styles.setDetails}>
-            <View style={styles.setMetric}>
-              <Ionicons name="stopwatch-outline" size={16} color="#183243" />
-              <Text style={styles.setMetricText}>{set.duration}s</Text>
-            </View>
-            <View style={styles.setMetric}>
-              <Ionicons name="flame-outline" size={16} color="#183243" />
-              <Text style={styles.setMetricText}>{set.calories} cal</Text>
-            </View>
-          </View>
-        </View>
-      )}
+    <View style={styles.newSetItem}>
       <TouchableOpacity
         style={styles.deleteSetButton}
         onPress={() => onDeleteSet(exerciseName, setIndex)}
       >
-        <Ionicons name="close-circle" size={20} color="#183243" />
+        <Ionicons name="trash" size={16} color="#FF6B6B" />
       </TouchableOpacity>
+
+      <View style={styles.setRowContent}>
+        <View style={styles.setNumberContainer}>
+          <View
+            style={[
+              styles.setNumberCircle,
+              { backgroundColor: getSetNumberColor(setIndex) },
+            ]}
+          >
+            <Text style={styles.setNumber}>{setIndex + 1}</Text>
+          </View>
+        </View>
+
+        <View style={styles.setDataContainer}>
+          {isCardioExercise ? (
+            <>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>
+                  {formatDuration(set.duration)}
+                  <Text style={styles.setDataLabel}>&nbsp;min</Text>
+                </Text>
+                {/* <Text style={styles.setDataLabel}>minutes</Text> */}
+              </View>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>{set.calories}</Text>
+              </View>
+            </>
+          ) : isMuscleGroupExercise ? (
+            <>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>
+                  {formatDuration(set.duration)}
+                  <Text style={styles.setDataLabel}>&nbsp;min</Text>
+                </Text>
+                {/* <Text style={styles.setDataLabel}>minutes</Text> */}
+              </View>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>{set.reps}</Text>
+              </View>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>
+                  {set.calories}
+                  <Text style={styles.setDataLabel}>kcal</Text>
+                </Text>
+              </View>
+              {!isBodyWeightExercise && (
+                <View style={styles.setDataColumn}>
+                  <Text style={styles.setDataValue}>
+                    {set.weight}
+                    <Text style={styles.setDataLabel}>kg</Text>
+                  </Text>
+                  {/* <Text style={styles.setDataLabel}>kg</Text> */}
+                </View>
+              )}
+            </>
+          ) : (
+            <>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>
+                  {formatDuration(set.duration)}
+                  <Text style={styles.setDataLabel}>&nbsp;min</Text>
+                </Text>
+                {/* <Text style={styles.setDataLabel}>minutes</Text> */}
+              </View>
+              <View style={styles.setDataColumn}>
+                <Text style={styles.setDataValue}>{set.calories}</Text>
+              </View>
+            </>
+          )}
+        </View>
+      </View>
     </View>
   );
+
+  const renderSetsHeader = () => {
+    if (!hasSets) return null;
+
+    const getHeaderColumns = () => {
+      if (isCardioExercise) {
+        return [
+          { icon: "time", name: "Duration", unit: "minutes", color: "#4ECDC4" },
+          { icon: "flame", name: "Cal", unit: "kcal", color: "#FF6B6B" },
+        ];
+      } else if (isMuscleGroupExercise) {
+        const columns = [
+          { icon: "time", name: "Duration", unit: "minutes", color: "#4ECDC4" },
+          { icon: "repeat", name: "Reps", unit: "", color: "#45B7D1" },
+          { icon: "flame", name: "Cal", unit: "kcal", color: "#FF6B6B" },
+        ];
+        if (!isBodyWeightExercise) {
+          columns.push({
+            icon: "weight-kilogram",
+            name: "Weight",
+            unit: "kg",
+            color: "#9B59B6",
+            isFA: true,
+          });
+        }
+        return columns;
+      } else {
+        return [
+          { icon: "time", name: "Duration", unit: "minutes", color: "#4ECDC4" },
+          { icon: "flame", name: "Cal", unit: "kcal", color: "#FF6B6B" },
+        ];
+      }
+    };
+
+    const headerColumns = getHeaderColumns();
+
+    // Check if weight column exists to determine font size
+    const hasWeight = isMuscleGroupExercise && !isBodyWeightExercise;
+    const headerFontSize = hasWeight ? 9 : 11;
+    const unitFontSize = hasWeight ? 8 : 9;
+
+    return (
+      <View style={styles.setsHeaderContainer}>
+        {/* First row - Icons and titles */}
+        <View style={styles.setsHeaderRow}>
+          <View style={styles.headerSetColumn}>
+            <Ionicons name="fitness" size={16} color="#FF6B6B" />
+            <Text
+              style={[
+                styles.headerText,
+                { fontSize: responsiveFontSize(headerFontSize) },
+              ]}
+            >
+              Sets
+            </Text>
+          </View>
+
+          <View style={styles.headerDataContainer}>
+            {headerColumns.map((column, index) => (
+              <View key={index} style={styles.headerIconContainer}>
+                <View style={styles.headerIconAndTitle}>
+                  {column.isFA ? (
+                    <MaterialCommunityIcons
+                      name={column.icon}
+                      size={14}
+                      color={column.color}
+                    />
+                  ) : (
+                    <Ionicons
+                      name={column.icon}
+                      size={14}
+                      color={column.color}
+                    />
+                  )}
+                  <Text
+                    style={[
+                      styles.headerText,
+                      { fontSize: responsiveFontSize(headerFontSize) },
+                    ]}
+                  >
+                    {column.name}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Second row - Units only */}
+        {/* <View style={styles.setsHeaderUnitsRow}>
+          <View style={styles.headerSetColumn}></View>
+
+          <View style={styles.headerDataContainer}>
+            {headerColumns.map((column, index) => (
+              <View key={index} style={styles.headerIconContainer}>
+                {column.unit && (
+                  <Text
+                    style={[
+                      styles.headerUnitText,
+                      { fontSize: responsiveFontSize(unitFontSize) },
+                    ]}
+                  >
+                    {column.unit}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        </View> */}
+      </View>
+    );
+  };
 
   return (
     <Animated.View style={[styles.cardContainer, { height: maxHeight }]}>
@@ -413,7 +569,6 @@ const ExerciseCard = ({
           )}
 
           {/* stopwatch */}
-
           {isActive && (
             <View
               style={[
@@ -430,18 +585,21 @@ const ExerciseCard = ({
         {expanded && (
           <View style={styles.expandedContent}>
             {hasSets ? (
-              <FlatList
-                data={exerciseState.sets}
-                renderItem={renderSetItem}
-                keyExtractor={(item, index) => `set-${index}`}
-                horizontal={false}
-                showsVerticalScrollIndicator={true}
-                scrollEnabled={true}
-                style={styles.setsList}
-                contentContainerStyle={styles.setsContainer}
-                initialNumToRender={50}
-                maxToRenderPerBatch={50}
-              />
+              <View style={styles.setsDisplayContainer}>
+                {renderSetsHeader()}
+                <FlatList
+                  data={exerciseState.sets}
+                  renderItem={renderSetItem}
+                  keyExtractor={(item, index) => `set-${index}`}
+                  horizontal={false}
+                  showsVerticalScrollIndicator={false}
+                  scrollEnabled={true}
+                  style={styles.setsList}
+                  contentContainerStyle={styles.setsContainer}
+                  initialNumToRender={50}
+                  maxToRenderPerBatch={50}
+                />
+              </View>
             ) : (
               <View style={styles.noSetsContainer}>
                 <Text style={styles.noSetsText}>No sets recorded</Text>
@@ -533,17 +691,17 @@ const styles = StyleSheet.create({
     padding: responsiveWidth(1),
     marginHorizontal: responsiveWidth(1),
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 1,
   },
   addButton: {
     marginRight: responsiveWidth(1),
     padding: responsiveWidth(1),
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 1,
   },
   expandButton: {
     padding: responsiveWidth(1),
@@ -564,107 +722,139 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   expandedContent: {
-    paddingHorizontal: responsiveWidth(3),
+    paddingHorizontal: responsiveWidth(0),
     paddingBottom: responsiveWidth(6),
     zIndex: 2,
   },
-  setsList: {
+  setsDisplayContainer: {
+    // backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: responsiveWidth(3),
+    padding: responsiveWidth(3),
+    marginTop: responsiveHeight(1),
+  },
+  setsHeaderContainer: {
     marginBottom: responsiveHeight(1),
   },
-  setsContainer: {
-    paddingBottom: responsiveHeight(1),
-  },
-  setItem: {
+  setsHeaderRow: {
     flexDirection: "row",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: responsiveWidth(2),
-    padding: responsiveWidth(2),
-    marginBottom: responsiveHeight(0.8),
     alignItems: "center",
-    justifyContent: "space-between",
+    paddingHorizontal: responsiveWidth(3),
+    paddingVertical: responsiveHeight(0.8),
+    // paddingBottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: 8,
+    // borderTopRightRadius: 8,
+    marginBottom: 0,
   },
-  setContent: {
+  headerSetColumn: {
+    width: responsiveWidth(13),
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerDataContainer: {
     flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingRight: responsiveWidth(6),
+  },
+  headerIconContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: responsiveWidth(1),
+  },
+  headerIconAndTitle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerText: {
+    fontWeight: "600",
+    color: "#333",
+    marginLeft: 1.5,
+    textAlign: "center",
+  },
+  // setsList: {
+  //   maxHeight: responsiveHeight(25),
+  // },
+  setsContainer: {
+    paddingVertical: responsiveHeight(0.5),
+  },
+  newSetItem: {
+    position: "relative",
+    paddingVertical: responsiveHeight(1.2),
+    paddingHorizontal: responsiveWidth(0.5),
+    marginBottom: responsiveHeight(0.5),
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: responsiveWidth(2),
+    borderLeftWidth: 3,
+    borderLeftColor: "#E3F2FD",
+  },
+  deleteSetButton: {
+    position: "absolute",
+    top: responsiveHeight(1.2),
+    right: responsiveWidth(1.5),
+    padding: responsiveWidth(0.5),
+    zIndex: 10,
+  },
+  setRowContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: responsiveWidth(6), // Space for delete button
+  },
+  setNumberContainer: {
+    width: responsiveWidth(13),
+    alignItems: "center",
+  },
+  setNumberCircle: {
+    width: responsiveWidth(4),
+    height: responsiveWidth(4),
+    borderRadius: responsiveWidth(4),
+    justifyContent: "center",
     alignItems: "center",
   },
   setNumber: {
-    width: responsiveWidth(6),
-    height: responsiveWidth(6),
-    borderRadius: responsiveWidth(3),
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    textAlign: "center",
-    lineHeight: responsiveWidth(6),
-    fontSize: responsiveFontSize(12),
+    color: "white",
+    fontSize: responsiveFontSize(9),
     fontWeight: "bold",
-    color: "#183243",
-    marginRight: responsiveWidth(2),
   },
-  setDetails: {
-    flexDirection: "row",
-    alignItems: "center",
+  setDataContainer: {
     flex: 1,
-  },
-  setMetric: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginRight: responsiveWidth(3),
   },
-  setMetricText: {
-    color: "#183243",
-    fontSize: responsiveFontSize(12),
-    marginLeft: 4,
+  setDataColumn: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: responsiveWidth(1),
   },
-  deleteSetButton: {
-    padding: 4,
+  setDataValue: {
+    fontSize: responsiveFontSize(11),
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
+  },
+  setDataLabel: {
+    fontSize: responsiveFontSize(9),
+    color: "#666",
+    marginTop: 2,
+    textAlign: "center",
   },
   noSetsContainer: {
     alignItems: "center",
     paddingVertical: responsiveHeight(1),
+    // backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: responsiveWidth(3),
+    marginTop: responsiveHeight(0.5),
   },
   noSetsText: {
-    color: "#183243",
+    color: "#666",
     fontSize: responsiveFontSize(14),
-  },
-  actionButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: responsiveHeight(1),
-    marginBottom: responsiveHeight(2),
-    zIndex: 3,
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: responsiveHeight(0.8),
-    paddingHorizontal: responsiveWidth(4),
-    borderRadius: responsiveWidth(5),
-    minWidth: responsiveWidth(30),
-  },
-  startButton: {
-    backgroundColor: "#4CAF50",
-  },
-  stopButton: {
-    backgroundColor: "#FF3B30",
-  },
-  historicalButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: responsiveHeight(0.8),
-    paddingHorizontal: responsiveWidth(4),
-    borderRadius: responsiveWidth(5),
-    backgroundColor: "#1E293B",
-    minWidth: responsiveWidth(30),
-  },
-  buttonText: {
-    color: "#FFF",
-    fontSize: responsiveFontSize(13),
-    fontWeight: "bold",
-  },
-  buttonIcon: {
-    marginLeft: responsiveWidth(1),
+    fontStyle: "italic",
   },
   disabledButton: {
     opacity: 0.5,
@@ -689,6 +879,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: responsiveFontSize(12),
     marginLeft: responsiveWidth(1),
+  },
+  headerTextContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    marginLeft: 4,
+  },
+  headerUnitText: {
+    fontWeight: "400",
+    color: "#666",
+    textAlign: "center",
+    marginLeft: 6,
+    marginTop: -3,
+    // marginTop: 1,
+  },
+  setsHeaderUnitsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: responsiveWidth(3),
+    paddingVertical: responsiveHeight(0.3),
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
 });
 

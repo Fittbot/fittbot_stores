@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -19,7 +25,8 @@ import CardTitle from "../../components/ui/Register/CardTitle";
 // Scroll selector dimensions
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
-const SELECTOR_WIDTH = 80;
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const SELECTOR_WIDTH = (SCREEN_WIDTH - 110) / 3;
 
 const DateOfBirthSelector = () => {
   const params = useLocalSearchParams();
@@ -35,22 +42,35 @@ const DateOfBirthSelector = () => {
   const dayScrollRef = useRef(null);
   const yearScrollRef = useRef(null);
 
+  // Simple scroll state tracking like height selector
+  const isScrollingRef = useRef({
+    month: false,
+    day: false,
+    year: false,
+  });
+
+  const scrollTimeoutRef = useRef({
+    month: null,
+    day: null,
+    year: null,
+  });
+
   const { gender, full_name } = params;
 
-  const SCREEN_WIDTH = Dimensions.get("window").width;
-  // const SELECTOR_WIDTH = (SCREEN_WIDTH - 110) / 3;
-  const SELECTOR_WIDTH = (SCREEN_WIDTH - 110) / 3;
-  const ITEM_HEIGHT = 50;
+  // Memoize the data arrays
+  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
+  const days = useMemo(() => Array.from({ length: 31 }, (_, i) => i + 1), []);
+  const years = useMemo(
+    () =>
+      Array.from(
+        { length: 100 },
+        (_, i) => new Date().getFullYear() - i
+      ).reverse(),
+    []
+  );
 
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const years = Array.from(
-    { length: 100 },
-    (_, i) => new Date().getFullYear() - i
-  ).reverse();
-
-  const formatMonth = (month) => {
-    return [
+  const formatMonth = useCallback((month) => {
+    const monthNames = [
       "Jan",
       "Feb",
       "Mar",
@@ -63,13 +83,14 @@ const DateOfBirthSelector = () => {
       "Oct",
       "Nov",
       "Dec",
-    ][month - 1];
-  };
+    ];
+    return monthNames[month - 1];
+  }, []);
 
+  // Initialize state from params
   useEffect(() => {
     if (params.dateOfBirth && !isInitialized) {
       const [year, month, day] = params.dateOfBirth.split("-").map(Number);
-
       setSelectedYear(year || 1999);
       setSelectedMonth(month || 6);
       setSelectedDay(day || 15);
@@ -82,171 +103,202 @@ const DateOfBirthSelector = () => {
     }
   }, [params, isInitialized]);
 
+  // Scroll to initial positions - simplified like height selector
   useEffect(() => {
-    if (
-      !isInitialized ||
-      !monthScrollRef.current ||
-      !dayScrollRef.current ||
-      !yearScrollRef.current
-    ) {
-      return;
-    }
+    if (!isInitialized) return;
 
-    setTimeout(() => {
-      if (monthScrollRef.current) {
-        const monthIndex = months.findIndex((m) => m === selectedMonth);
-        if (monthIndex >= 0) {
-          monthScrollRef.current.scrollTo({
-            y: monthIndex * ITEM_HEIGHT,
-            animated: false,
-          });
-        }
+    const scrollToInitialPositions = () => {
+      const monthIndex = months.findIndex((m) => m === selectedMonth);
+      const dayIndex = days.findIndex((d) => d === selectedDay);
+      const yearIndex = years.findIndex((y) => y === selectedYear);
+
+      if (
+        monthScrollRef.current &&
+        monthIndex >= 0 &&
+        !isScrollingRef.current.month
+      ) {
+        monthScrollRef.current.scrollTo({
+          y: monthIndex * ITEM_HEIGHT,
+          animated: false,
+        });
       }
 
-      if (dayScrollRef.current) {
-        const dayIndex = days.findIndex((d) => d === selectedDay);
-        if (dayIndex >= 0) {
-          dayScrollRef.current.scrollTo({
-            y: dayIndex * ITEM_HEIGHT,
-            animated: false,
-          });
-        }
+      if (
+        dayScrollRef.current &&
+        dayIndex >= 0 &&
+        !isScrollingRef.current.day
+      ) {
+        dayScrollRef.current.scrollTo({
+          y: dayIndex * ITEM_HEIGHT,
+          animated: false,
+        });
       }
 
-      if (yearScrollRef.current) {
-        const yearIndex = years.findIndex((y) => y === selectedYear);
-        if (yearIndex >= 0) {
-          yearScrollRef.current.scrollTo({
-            y: yearIndex * ITEM_HEIGHT,
-            animated: false,
-          });
-        }
-      }
-    }, 50);
-  }, [selectedMonth, selectedDay, selectedYear, isInitialized]);
-
-  const debounce = (func, delay) => {
-    let timeoutId;
-    return (...args) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    };
-  };
-
-  const handleMonthScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const currentIndex = Math.round(offsetY / ITEM_HEIGHT);
-    const newMonth = months[currentIndex];
-
-    if (newMonth && newMonth !== selectedMonth) {
-      debounce(() => setSelectedMonth(newMonth), 100)();
-    }
-  };
-
-  const handleDayScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const currentIndex = Math.round(offsetY / ITEM_HEIGHT);
-    const newDay = days[currentIndex];
-
-    if (newDay && newDay !== selectedDay) {
-      debounce(() => setSelectedDay(newDay), 100)();
-    }
-  };
-
-  const handleYearScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const currentIndex = Math.round(offsetY / ITEM_HEIGHT);
-    const newYear = years[currentIndex];
-
-    if (newYear && newYear !== selectedYear) {
-      debounce(() => setSelectedYear(newYear), 100)();
-    }
-  };
-
-  const handleScrollEnd =
-    (scrollRef, dataArray, selectedValue, setSelectedValue) =>
-    async (event) => {
-      const offsetY = event.nativeEvent.contentOffset.y;
-      const index = Math.round(offsetY / ITEM_HEIGHT);
-      const newValue = dataArray[index];
-
-      if (newValue && newValue !== selectedValue) {
-        setSelectedValue(newValue);
-        // Ensure smooth scroll to the selected item
-        scrollRef.current?.scrollTo({
-          y: index * ITEM_HEIGHT,
-          animated: true,
+      if (
+        yearScrollRef.current &&
+        yearIndex >= 0 &&
+        !isScrollingRef.current.year
+      ) {
+        yearScrollRef.current.scrollTo({
+          y: yearIndex * ITEM_HEIGHT,
+          animated: false,
         });
       }
     };
 
-  const handleItemPress = (scrollRef, value, index, setSelectedValue) => {
-    setSelectedValue(value);
-    scrollRef.current?.scrollTo({
-      y: index * ITEM_HEIGHT,
-      animated: true,
-    });
-  };
+    const timeout = setTimeout(scrollToInitialPositions, 50);
+    return () => clearTimeout(timeout);
+  }, [
+    selectedMonth,
+    selectedDay,
+    selectedYear,
+    isInitialized,
+    months,
+    days,
+    years,
+  ]);
 
-  const renderScrollSelector = (
-    scrollRef,
-    dataArray,
-    selectedValue,
-    label,
-    setSelectedValue,
-    formatFunc = (val) => val
-  ) => {
-    return (
-      <View style={[styles.selectorContainer, { width: SELECTOR_WIDTH }]}>
-        <Text style={styles.selectorLabel}>{label}</Text>
-        <View style={styles.heightScrollContainer}>
-          <View style={styles.selectionHighlight} />
-          <ScrollView
-            ref={scrollRef}
-            style={styles.heightScrollView}
-            contentContainerStyle={styles.heightScrollViewContent}
-            showsVerticalScrollIndicator={false}
-            onMomentumScrollEnd={handleScrollEnd(
-              scrollRef,
-              dataArray,
-              selectedValue,
-              setSelectedValue
-            )}
-            onScrollEndDrag={handleScrollEnd(
-              scrollRef,
-              dataArray,
-              selectedValue,
-              setSelectedValue
-            )}
-            snapToInterval={ITEM_HEIGHT}
-            decelerationRate="fast"
-            scrollEventThrottle={16}
-          >
-            {dataArray.map((item, index) => (
-              <TouchableOpacity
-                key={item}
-                style={[styles.itemContainer, { height: ITEM_HEIGHT }]}
-                onPress={() =>
-                  handleItemPress(scrollRef, item, index, setSelectedValue)
-                }
-              >
-                <Text
-                  style={[
-                    styles.itemText,
-                    item === selectedValue && styles.selectedItemText,
-                  ]}
+  // Simplified scroll handler like height selector
+  const createScrollHandler = useCallback(
+    (dataArray, setSelectedValue, scrollType) => {
+      return (event) => {
+        isScrollingRef.current[scrollType] = true;
+        const offsetY = event.nativeEvent.contentOffset.y;
+        const itemHeight = ITEM_HEIGHT;
+        const currentIndex = Math.round(offsetY / itemHeight);
+
+        if (dataArray[currentIndex] !== undefined) {
+          // Don't set selected value here, just track scrolling
+        }
+
+        if (scrollTimeoutRef.current[scrollType]) {
+          clearTimeout(scrollTimeoutRef.current[scrollType]);
+        }
+
+        const currentOffsetY = offsetY;
+        scrollTimeoutRef.current[scrollType] = setTimeout(() => {
+          const finalIndex = Math.round(currentOffsetY / itemHeight);
+
+          if (dataArray[finalIndex] !== undefined) {
+            setSelectedValue(dataArray[finalIndex]);
+          }
+
+          isScrollingRef.current[scrollType] = false;
+        }, 150);
+      };
+    },
+    []
+  );
+
+  // Simplified momentum scroll end handler like height selector
+  const createMomentumScrollEndHandler = useCallback(
+    (dataArray, setSelectedValue, scrollType) => {
+      return (event) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        const itemHeight = ITEM_HEIGHT;
+        const currentIndex = Math.round(offsetY / itemHeight);
+
+        if (dataArray[currentIndex] !== undefined) {
+          setSelectedValue(dataArray[currentIndex]);
+        }
+
+        isScrollingRef.current[scrollType] = false;
+      };
+    },
+    []
+  );
+
+  // Handle direct item press
+  const handleItemPress = useCallback(
+    (scrollRef, value, index, setSelectedValue, scrollType) => {
+      if (isScrollingRef.current[scrollType]) return;
+
+      setSelectedValue(value);
+
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          y: index * ITEM_HEIGHT,
+          animated: true,
+        });
+      }
+    },
+    []
+  );
+
+  const renderScrollSelector = useCallback(
+    (
+      scrollRef,
+      dataArray,
+      selectedValue,
+      label,
+      setSelectedValue,
+      scrollType,
+      formatFunc = (val) => val
+    ) => {
+      const scrollHandler = createScrollHandler(
+        dataArray,
+        setSelectedValue,
+        scrollType
+      );
+
+      const momentumScrollEndHandler = createMomentumScrollEndHandler(
+        dataArray,
+        setSelectedValue,
+        scrollType
+      );
+
+      return (
+        <View style={[styles.selectorContainer, { width: SELECTOR_WIDTH }]}>
+          <Text style={styles.selectorLabel}>{label}</Text>
+          <View style={styles.heightScrollContainer}>
+            <View style={styles.selectionHighlight} />
+            <ScrollView
+              ref={scrollRef}
+              style={styles.heightScrollView}
+              contentContainerStyle={styles.heightScrollViewContent}
+              showsVerticalScrollIndicator={false}
+              onScroll={scrollHandler}
+              onMomentumScrollEnd={momentumScrollEndHandler}
+              scrollEventThrottle={16}
+              snapToInterval={ITEM_HEIGHT}
+              decelerationRate="fast"
+              bounces={false}
+              overScrollMode="never"
+            >
+              {dataArray.map((item, index) => (
+                <TouchableOpacity
+                  key={`${scrollType}-${item}`}
+                  style={[styles.itemContainer, { height: ITEM_HEIGHT }]}
+                  onPress={() =>
+                    handleItemPress(
+                      scrollRef,
+                      item,
+                      index,
+                      setSelectedValue,
+                      scrollType
+                    )
+                  }
+                  activeOpacity={0.7}
                 >
-                  {formatFunc(item)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                  <Text
+                    style={[
+                      styles.itemText,
+                      item === selectedValue && styles.selectedItemText,
+                    ]}
+                  >
+                    {formatFunc(item)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
-      </View>
-    );
-  };
+      );
+    },
+    [createScrollHandler, createMomentumScrollEndHandler, handleItemPress]
+  );
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     const formattedDate = `${selectedYear}-${String(selectedMonth).padStart(
       2,
       "0"
@@ -261,7 +313,26 @@ const DateOfBirthSelector = () => {
         dateOfBirth: formattedDate,
       },
     });
-  };
+  }, [
+    selectedYear,
+    selectedMonth,
+    selectedDay,
+    router,
+    params,
+    full_name,
+    gender,
+  ]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(scrollTimeoutRef.current).forEach((timeout) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+      });
+    };
+  }, []);
 
   return (
     <LinearGradient
@@ -282,6 +353,7 @@ const DateOfBirthSelector = () => {
                 selectedMonth,
                 "Month",
                 setSelectedMonth,
+                "month",
                 formatMonth
               )}
               {renderScrollSelector(
@@ -289,14 +361,16 @@ const DateOfBirthSelector = () => {
                 days,
                 selectedDay,
                 "Day",
-                setSelectedDay
+                setSelectedDay,
+                "day"
               )}
               {renderScrollSelector(
                 yearScrollRef,
                 years,
                 selectedYear,
                 "Year",
-                setSelectedYear
+                setSelectedYear,
+                "year"
               )}
             </View>
           </View>
@@ -320,26 +394,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   formContainer: {
-    // flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
-    // backgroundColor: 'rgb(63, 144, 43)',
     height: "60%",
   },
   contentContainer: {
     marginBottom: 10,
-    // backgroundColor: '#fff',
   },
   birthdaySelectorsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    // backgroundColor: '#cdbd0f',
   },
   selectorContainer: {
     alignItems: "center",
     marginHorizontal: 5,
-    // paddingHorizontal: 10,
   },
   selectorLabel: {
     fontSize: 16,
@@ -349,43 +418,44 @@ const styles = StyleSheet.create({
   },
   heightScrollContainer: {
     height: VISIBLE_ITEMS * ITEM_HEIGHT,
-    overflow: "hidden",
-    borderRadius: 8,
-    // backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 10,
+    position: "relative",
   },
   heightScrollView: {
-    height: VISIBLE_ITEMS * ITEM_HEIGHT,
+    width: "100%",
   },
   heightScrollViewContent: {
     paddingVertical: (VISIBLE_ITEMS * ITEM_HEIGHT - ITEM_HEIGHT) / 2,
+    alignItems: "center",
   },
   selectionHighlight: {
     position: "absolute",
-    top: "50%",
+    top: "40%",
+    bottom: "40%",
     left: 0,
     right: 0,
-    height: ITEM_HEIGHT,
-    transform: [{ translateY: -ITEM_HEIGHT / 2 }],
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
     borderColor: "#FF5757",
-    // backgroundColor: 'rgba(255, 87, 87, 0.1)',
+    zIndex: 1,
+    pointerEvents: "none",
   },
   itemContainer: {
     justifyContent: "center",
     alignItems: "center",
     height: ITEM_HEIGHT,
+    paddingHorizontal: 20,
   },
   itemText: {
-    fontSize: 20,
+    fontSize: 14,
     color: "#b9b9b9",
     fontWeight: "500",
+    textAlign: "center",
+    lineHeight: ITEM_HEIGHT,
   },
   selectedItemText: {
     color: "#FF5757",
-    fontSize: 24,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   numberItem: {
     fontSize: 18,
@@ -410,7 +480,6 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: Color.rgContinue,
     fontSize: 14,
-    // fontWeight: 'bold',
     marginRight: 10,
   },
   backContainer: {

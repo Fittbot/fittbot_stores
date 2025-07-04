@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   View,
+  PanResponder,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -45,9 +46,13 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import apiConfig from "../../../services/apiConfig";
 import * as SecureStore from "expo-secure-store";
+import useEdgeSwipe from "../../../hooks/useEdgeSwipe";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 const HEADER_MAX_HEIGHT = 235;
+const EDGE_SWIPE_THRESHOLD = 30;
+const SWIPE_MIN_DISTANCE = 50;
+const SWIPE_MIN_VELOCITY = 0.3;
 const baseURL = apiConfig.API_URL;
 
 const tabHeaders = [
@@ -88,16 +93,16 @@ const tabHeaders = [
     bgImage: require("../../../assets/images/background/buddy.png"),
   },
   {
-    title: "My Rewards",
-    iconType: "png",
-    iconSource: require("../../../assets/images/header-icons/rewards.png"),
-    bgImage: require("../../../assets/images/feed/feed_bg.png"),
-  },
-  {
     title: "Leaderboard",
     iconType: "png",
     iconSource: require("../../../assets/images/header-icons/leaderboard.png"),
     bgImage: require("../../../assets/images/background/leaderboard_bg.png"),
+  },
+  {
+    title: "My Rewards",
+    iconType: "png",
+    iconSource: require("../../../assets/images/header-icons/rewards.png"),
+    bgImage: require("../../../assets/images/feed/feed_bg.png"),
   },
 ];
 
@@ -131,8 +136,8 @@ const bgColors = {
     color2: "#022950",
   },
   Leaderboard: {
-    color1: "#00B4DB",
-    color2: "#0E364E",
+    color1: "#3A6073",
+    color2: "#213540",
   },
 };
 
@@ -180,6 +185,9 @@ const App = () => {
   const [tag, setTag] = useState(null);
   const [gymDetails, setGymDetails] = useState(null);
   const router = useRouter();
+
+  const { isSideNavVisible, closeSideNav, toggleSideNav } = useNavigation();
+
   useEffect(() => {
     if (notif_timestamp && notif_timestamp !== lastNotifTimestamp) {
       setLastNotifTimestamp(notif_timestamp);
@@ -190,7 +198,6 @@ const App = () => {
           const storedTab = await AsyncStorage.getItem("notification_tab");
           if (storedTab) {
             handleTabChange(storedTab);
-
             await AsyncStorage.removeItem("notification_tab");
           }
         } catch (error) {
@@ -202,11 +209,26 @@ const App = () => {
     }
   }, [notif_timestamp]);
 
-  // useEffect(() => {
-  //   if (tab) {
-  //     handleTabChange(tab);
-  //   }
-  // }, [tab]);
+  const {
+    panHandlers,
+    SwipeIndicator,
+    isSwipeActive,
+    isEnabled: swipeEnabled,
+    swipeAnimatedValue,
+    resetSwipe,
+    debug,
+    temporarilyDisableSwipe,
+  } = useEdgeSwipe({
+    onSwipeComplete: toggleSideNav,
+    isEnabled: true,
+    isBlocked: isSideNavVisible,
+    config: {
+      edgeSwipeThreshold: 30,
+      swipeMinDistance: 50,
+      swipeMinVelocity: 0.3,
+      preventIOSBackSwipe: true,
+    },
+  });
 
   const handleTabChange = (newTab) => {
     setActiveTabHeader(newTab);
@@ -214,6 +236,8 @@ const App = () => {
   };
 
   const scrollToTab = (tabName) => {
+    temporarilyDisableSwipe();
+
     const tabIndex = [
       "My Progress",
       "My Gym",
@@ -224,6 +248,7 @@ const App = () => {
       "My Rewards",
       "Leaderboard",
     ].indexOf(tabName);
+
     if (tabIndex !== -1 && tabScrollViewRef.current) {
       const approximateTabWidth = 100;
       const scrollToX = Math.max(
@@ -357,6 +382,10 @@ const App = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
+        if (isSideNavVisible) {
+          closeSideNav();
+          return true;
+        }
         if (activeTabHeader !== "My Progress") {
           setActiveTabHeader("My Progress");
           scrollToTab("My Progress");
@@ -373,7 +402,7 @@ const App = () => {
       return () => {
         backHandler.remove();
       };
-    }, [activeTabHeader])
+    }, [activeTabHeader, isSideNavVisible])
   );
 
   const changeTab = (path, params) => {
@@ -381,6 +410,7 @@ const App = () => {
     scrollToTab(path);
     setMyParams(params);
   };
+
   const onNullTab = () => {
     setMyParams("");
   };
@@ -399,7 +429,7 @@ const App = () => {
     } else if (activeTabHeader === "Water") {
       return <WaterTracker />;
     } else if (activeTabHeader === "My Rewards") {
-      return <Rewards />;
+      return <Rewards setActiveTabHeader={setActiveTabHeader} />;
     } else if (activeTabHeader === "Leaderboard") {
       return <MyLeaderboard tab={myParams} onNullTab={onNullTab} />;
     } else {
@@ -532,10 +562,6 @@ const App = () => {
     checkClientStatus();
   };
 
-  const { isSideNavVisible, closeSideNav } = useNavigation();
-
-  const { toggleSideNav } = useNavigation();
-
   const calculateCalories = async () => {
     try {
       const clientId = await AsyncStorage.getItem("client_id");
@@ -629,7 +655,7 @@ const App = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panHandlers}>
       {isLoading ? (
         <FitnessLoader />
       ) : (
@@ -659,41 +685,45 @@ const App = () => {
                 <FitnessLoader />
               ) : (
                 <>
-                  <HeaderComponent
-                    userName={sideBarData?.userName}
-                    progress={progress}
-                    tag={tag}
-                    badge={badge}
-                    showHeader={true}
-                    headerTranslateY={headerTranslateY}
-                    gymName={gymName}
-                    xp={xp}
-                    tabHeaders={tabHeaders}
-                    activeTabHeader={activeTabHeader}
-                    setActiveTabHeader={setActiveTabHeader}
-                    setShowHeader={() => {}}
-                    isMenuVisible={isMenuVisible}
-                    setIsMenuVisible={setIsMenuVisible}
-                    setShowBadgeSummary={setShowBadgeSummary}
-                    menuItems={menuItems}
-                    profile={profile}
-                    width={width}
-                    tabScrollViewRef={tabScrollViewRef}
-                    tabIndex={[
-                      "My Progress",
-                      "My Gym",
-                      "Gym Buddy",
-                      "Water",
-                      "Reminders",
-                      "Analysis",
-                      "My Rewards",
-                      "Leaderboard",
-                    ]}
-                    color1={bgColors[activeTabHeader]?.color1 || "#0E364E"}
-                    color2={bgColors[activeTabHeader]?.color2 || "#03A3FA"}
-                    toggleSideNav={toggleSideNav}
-                    gymDetails={gymDetails}
-                  />
+                  {activeTabHeader === "My Rewards" ? (
+                    ""
+                  ) : (
+                    <HeaderComponent
+                      userName={sideBarData?.userName}
+                      progress={progress}
+                      tag={tag}
+                      badge={badge}
+                      showHeader={true}
+                      headerTranslateY={headerTranslateY}
+                      gymName={gymName}
+                      xp={xp}
+                      tabHeaders={tabHeaders}
+                      activeTabHeader={activeTabHeader}
+                      setActiveTabHeader={setActiveTabHeader}
+                      setShowHeader={() => {}}
+                      isMenuVisible={isMenuVisible}
+                      setIsMenuVisible={setIsMenuVisible}
+                      setShowBadgeSummary={setShowBadgeSummary}
+                      menuItems={menuItems}
+                      profile={profile}
+                      width={width}
+                      tabScrollViewRef={tabScrollViewRef}
+                      tabIndex={[
+                        "My Progress",
+                        "My Gym",
+                        "Gym Buddy",
+                        "Water",
+                        "Reminders",
+                        "Analysis",
+                        "Leaderboard",
+                        "My Rewards",
+                      ]}
+                      color1={bgColors[activeTabHeader]?.color1 || "#0E364E"}
+                      color2={bgColors[activeTabHeader]?.color2 || "#03A3FA"}
+                      toggleSideNav={toggleSideNav}
+                      gymDetails={gymDetails}
+                    />
+                  )}
 
                   {isSideNavVisible && (
                     <SideNavigation
@@ -713,7 +743,10 @@ const App = () => {
                       showsVerticalScrollIndicator={false}
                       contentContainerStyle={[
                         styles.scrollViewContent,
-                        { paddingTop: headerHeight },
+                        {
+                          paddingTop:
+                            activeTabHeader === "My Rewards" ? 0 : headerHeight,
+                        },
                       ]}
                       onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -724,6 +757,7 @@ const App = () => {
                       {renderContent()}
                     </Animated.ScrollView>
                   )}
+
                   <BadgeSummaryModal
                     visible={showBadgeSummary}
                     onClose={() => setShowBadgeSummary(false)}
@@ -738,6 +772,7 @@ const App = () => {
                     currentBadge={""}
                     currentLevel={""}
                   />
+                  <SwipeIndicator />
                 </>
               )}
             </>
@@ -964,6 +999,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     zIndex: 999, // Ensure it stays on top of other content
+  },
+  // New styles for swipe functionality
+  swipeIndicatorOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 4,
+    height: "100%",
+    backgroundColor: "#007AFF",
+    zIndex: 1000,
   },
 });
 

@@ -30,15 +30,15 @@ const MenuItems = ({ setIsMenuVisible = {} }) => {
           },
         ]
       : []),
-    {
-      id: "preferences",
-      icon: "notifications-outline",
-      text: "Preferences",
-      onPress: () => {
-        router.push("/client/preferences");
-        setIsMenuVisible(false);
-      },
-    },
+    // {
+    //   id: "preferences",
+    //   icon: "notifications-outline",
+    //   text: "Preferences",
+    //   onPress: () => {
+    //     router.push("/client/preferences");
+    //     setIsMenuVisible(false);
+    //   },
+    // },
     {
       id: "feedback",
       icon: "mail-outline",

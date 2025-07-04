@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   TouchableWithoutFeedback,
+  Platform,
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -120,7 +121,7 @@ const EarnXP = ({ quest }) => {
           maskElement={<Text style={styles.sectionTitle}>Daily Quests</Text>}
         >
           <LinearGradient
-            colors={["#030A15", "#0154A0"]}
+            colors={["#FFFFFF", "#FFFFFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0.4, y: 0 }}
             style={{ justifyContent: "center" }}
@@ -139,10 +140,7 @@ const EarnXP = ({ quest }) => {
             onPress={() => handleQuestPress(quest)}
           >
             <LinearGradient
-              colors={[
-                "rgba(236, 236, 236, 0.37)",
-                "rgba(74, 162, 244, 0.31)",
-              ].reverse()}
+              colors={["#16144D", "#16144D"].reverse()}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.questItem}
@@ -205,22 +203,23 @@ const EarnXP = ({ quest }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F7FA",
+    backgroundColor: "#16144D",
   },
   questItemContainer: {
     marginBottom: 12,
     borderRadius: 10,
-    shadowColor: "#000",
+    shadowColor: "#FDFDFD",
     shadowOffset: {
-      width: 0,
-      height: 2,
+      width: 1,
+      height: 1,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
-    // elevation: 2,
+    borderColor: "rgba(253, 253, 253, 0.48)",
+    borderWidth: Platform.OS === "ios" ? 0 : 0.5,
   },
   sectionContainer: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#16144D",
     borderRadius: 12,
     margin: 16,
     padding: 16,
@@ -232,7 +231,7 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: 12,
-    color: "rgba(0,0,0,0.5)",
+    color: "rgba(245, 245, 245, 0.82)",
     marginBottom: 20,
   },
   questItem: {
@@ -278,7 +277,7 @@ const styles = StyleSheet.create({
   questTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: "#fff",
     marginBottom: 4,
   },
   descriptionContainer: {
@@ -289,12 +288,12 @@ const styles = StyleSheet.create({
   },
   questDescription: {
     fontSize: 10,
-    color: "rgba(0,0,0,0.6)",
+    color: "#FDFDFD",
     flexShrink: 1,
   },
   readMoreText: {
     fontSize: 10,
-    color: "#0154A0",
+    color: "rgba(253, 253, 253, 0.48)",
     fontWeight: "600",
     marginLeft: 4,
   },

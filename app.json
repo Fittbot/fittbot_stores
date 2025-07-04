@@ -2,7 +2,7 @@
   "expo": {
     "name": "Fittbot",
     "slug": "Fittbot",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "userapp",
@@ -30,7 +30,8 @@
       "permissions": ["com.android.vending.BILLING"],
       "package": "com.fittbot.fittbot_user",
       "googleServicesFile": "./google-services.json",
-      "useNextNotificationsApi": true
+      "useNextNotificationsApi": true,
+      "targetSdkVersion": 35
     },
     "web": {
       "output": "static",

@@ -314,7 +314,7 @@ const WaterTracker = () => {
 
             <View style={styles.container2}>
               <LinearGradient
-                colors={["#8EF4C2", "#23C6D3", "#006FAD"].reverse()}
+                colors={["#006FAD", "#129BC0", "#23C6D3"].reverse()}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.outerCircle}
@@ -381,7 +381,7 @@ const WaterTracker = () => {
                 title={"Daily Goal"}
                 span={`${targetWater} ml`}
                 mainContainerStyle={{ width: "45%" }}
-                colors={["#8EF4C2", "#23C6D3", "#006FAD"]}
+                colors={["#23C6D3", "#129BC0", "#006FAD"]}
                 edit
                 onPress={() => setModalVisible(true)}
               />
@@ -389,7 +389,18 @@ const WaterTracker = () => {
                 title={"Remaining"}
                 span={`${remainingWater} ml`}
                 mainContainerStyle={{ width: "45%" }}
-                colors={["#8EF4C2", "#23C6D3", "#006FAD"]}
+                colors={["#FFFFFF", "#FFFFFF", "#FFFFFF"]}
+                textStyle={{
+                  color: "#006FAD",
+                }}
+                spanStyle={{
+                  color: "#006FAD",
+                }}
+                borderStyle={{
+                  borderColor: "#006FAD",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                }}
               />
             </View>
 
@@ -458,11 +469,11 @@ const WaterTracker = () => {
               );
             })}
           </View>
-          <View style={{ paddingTop: 40, paddingHorizontal: 20 }}>
+          <View style={{ paddingTop: 20, paddingHorizontal: 20 }}>
             <Text style={{ color: "#979797", fontSize: 12 }}>
               The recommended daily water intake for adults typically falls
-              between 2 to 3 liters, with men generally needing around 3.7
-              liters and women needing 2.7 liters
+              between 2 to 3 liters, with men generally needing around 3.5
+              liters and women needing 2.5 liters
             </Text>
           </View>
         </View>

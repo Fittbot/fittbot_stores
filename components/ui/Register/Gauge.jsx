@@ -1,8 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import Svg, { Circle, Line } from 'react-native-svg';
-import { Color } from '../../../GlobalStyles';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
+import Svg, { Circle, Line } from "react-native-svg";
+import { Color } from "../../../GlobalStyles";
 
 const CircularProgressBar = ({
   size = 200,
@@ -11,72 +17,164 @@ const CircularProgressBar = ({
   minValue = 0,
   maxValue = 100,
   tintColor = Color.rgPrimary,
-  backgroundColor = '#888',
-  unit = 'kg',
+  backgroundColor = "#888",
+  unit = "kg",
   onProgressChange,
   style,
 }) => {
   const [fill, setFill] = useState(initialValue);
   const scrollViewRef = useRef(null);
-  const itemHeight = 50; // Height of each number item
+  const itemHeight = 50;
+  const visibleItems = 5;
 
-  // Generate an array of numbers from minValue to maxValue
+  // Simplified scroll state tracking like age selector
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Generate numbers array
   const numbers = Array.from(
     { length: maxValue - minValue + 1 },
     (_, i) => i + minValue
   );
 
-  const handleScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const currentIndex = Math.round(offsetY / itemHeight);
+  // Update fill when initialValue changes (when coming back from next page)
+  useEffect(() => {
+    setFill(initialValue);
+  }, [initialValue]);
 
-    // Ensure we don't go beyond the last number
-    const newValue = Math.max(
-      minValue,
-      Math.min(maxValue, currentIndex + minValue)
-    );
+  // Initialize component
+  useEffect(() => {
+    if (!isInitialized) {
+      setIsInitialized(true);
+    }
+  }, [isInitialized]);
 
-    if (newValue !== fill) {
-      setFill(newValue);
+  // Scroll to correct position when fill changes
+  useEffect(() => {
+    if (!isInitialized || !scrollViewRef.current) return;
 
-      // Call progress change callback if provided
-      if (onProgressChange) {
-        onProgressChange(newValue);
+    const scrollToPosition = () => {
+      const index = fill - minValue; // Direct calculation instead of findIndex
+
+      if (index >= 0 && index < numbers.length && !isScrollingRef.current) {
+        scrollViewRef.current.scrollTo({
+          y: index * itemHeight,
+          animated: false,
+        });
       }
-    }
-  };
+    };
 
-  // Scroll to initial value on component mount
-  const scrollToInitialValue = () => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({
-        y: (fill - minValue) * itemHeight,
-        animated: false,
-      });
-    }
-  };
+    // Add a small delay to ensure ScrollView is ready
+    const timeout = setTimeout(scrollToPosition, 100);
+    return () => clearTimeout(timeout);
+  }, [fill, isInitialized, minValue, itemHeight, numbers.length]);
 
-  // Generate ticks for speedometer
-  const renderTicks = () => {
+  // Simplified scroll handler like age selector
+  const handleScroll = useCallback(
+    (event) => {
+      isScrollingRef.current = true;
+      const offsetY = event.nativeEvent.contentOffset.y;
+      const currentIndex = Math.round(offsetY / itemHeight);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      const currentOffsetY = offsetY;
+      scrollTimeoutRef.current = setTimeout(() => {
+        const finalIndex = Math.round(currentOffsetY / itemHeight);
+        const newValue = Math.max(
+          minValue,
+          Math.min(maxValue, finalIndex + minValue)
+        );
+
+        if (
+          finalIndex >= 0 &&
+          finalIndex < numbers.length &&
+          newValue !== fill
+        ) {
+          setFill(newValue);
+          if (onProgressChange) {
+            onProgressChange(newValue);
+          }
+        }
+
+        isScrollingRef.current = false;
+      }, 150);
+    },
+    [minValue, maxValue, itemHeight, onProgressChange, numbers.length, fill]
+  );
+
+  // Simplified momentum scroll end handler like age selector
+  const handleMomentumScrollEnd = useCallback(
+    (event) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      const currentIndex = Math.round(offsetY / itemHeight);
+      const newValue = Math.max(
+        minValue,
+        Math.min(maxValue, currentIndex + minValue)
+      );
+
+      if (
+        currentIndex >= 0 &&
+        currentIndex < numbers.length &&
+        newValue !== fill
+      ) {
+        setFill(newValue);
+        if (onProgressChange) {
+          onProgressChange(newValue);
+        }
+      }
+
+      isScrollingRef.current = false;
+    },
+    [minValue, maxValue, itemHeight, onProgressChange, numbers.length, fill]
+  );
+
+  // Handle direct item press like age selector
+  const handleItemPress = useCallback(
+    (value, index) => {
+      if (isScrollingRef.current) return;
+
+      setFill(value);
+      if (onProgressChange) {
+        onProgressChange(value);
+      }
+
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({
+          y: index * itemHeight,
+          animated: true,
+        });
+      }
+    },
+    [onProgressChange, itemHeight]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Generate ticks for speedometer (memoized for performance)
+  const renderTicks = useCallback(() => {
     const ticks = [];
-    const totalTicks = 30; // Total number of ticks
-    const startAngle = -90; // Start from bottom of semicircle
+    const totalTicks = 30;
+    const startAngle = -90;
     const sweepAngle = 180;
     const radius = size / 2;
 
     for (let i = 0; i <= totalTicks; i++) {
       const angle = startAngle + (sweepAngle * i) / totalTicks;
       const radians = angle * (Math.PI / 180);
-
-      // Differentiate major and minor ticks
       const isLargeTick = i % 5 === 0;
+      const innerRadius = isLargeTick ? radius - 30 : radius - 20;
 
-      // Inner radius for tick start
-      const innerRadius = isLargeTick
-        ? radius - 30 // Longer ticks for major marks
-        : radius - 20; // Shorter ticks for minor marks
-
-      // Calculate tick coordinates
       const x1 = radius + innerRadius * Math.cos(radians);
       const y1 = radius + innerRadius * Math.sin(radians);
       const x2 = radius + radius * Math.cos(radians);
@@ -96,7 +194,7 @@ const CircularProgressBar = ({
     }
 
     return ticks;
-  };
+  }, [size]);
 
   return (
     <View style={[styles.container, style]}>
@@ -139,35 +237,51 @@ const CircularProgressBar = ({
       >
         {() => (
           <View style={styles.contentContainer}>
-            <View style={[styles.scrollContainer, { height: itemHeight * 5 }]}>
+            <View
+              style={[
+                styles.scrollContainer,
+                { height: itemHeight * visibleItems },
+              ]}
+            >
+              {/* Selection highlight like age selector */}
+              <View style={styles.selectionHighlight} />
+
               <ScrollView
                 ref={scrollViewRef}
-                onLayout={scrollToInitialValue}
+                style={styles.scrollView}
+                contentContainerStyle={[
+                  styles.scrollContent,
+                  {
+                    paddingVertical:
+                      (visibleItems * itemHeight - itemHeight) / 2,
+                  },
+                ]}
                 onScroll={handleScroll}
+                onMomentumScrollEnd={handleMomentumScrollEnd}
                 scrollEventThrottle={16}
                 showsVerticalScrollIndicator={false}
                 snapToInterval={itemHeight}
                 decelerationRate="fast"
-                contentContainerStyle={[
-                  styles.scrollContent,
-                  {
-                    paddingTop: itemHeight * 2,
-                    paddingBottom: itemHeight * 2,
-                  },
-                ]}
+                bounces={false}
                 overScrollMode="never"
               >
-                {numbers.map((number) => (
-                  <Text
+                {numbers.map((number, index) => (
+                  <TouchableOpacity
                     key={number}
-                    style={[
-                      styles.numberItem,
-                      number === fill && styles.activeNumber,
-                    ]}
+                    style={[styles.itemContainer, { height: itemHeight }]}
+                    onPress={() => handleItemPress(number, index)}
+                    activeOpacity={0.7}
                   >
-                    {number}
-                    {number === fill ? ' Kg' : ''}
-                  </Text>
+                    <Text
+                      style={[
+                        styles.numberItem,
+                        number === fill && styles.activeNumber,
+                      ]}
+                    >
+                      {number}
+                      {number === fill ? ` ${unit}` : ""}
+                    </Text>
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
@@ -180,41 +294,59 @@ const CircularProgressBar = ({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   contentContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   ticksOverlay: {
     zIndex: 100,
-    position: 'absolute',
+    position: "absolute",
   },
   scrollContainer: {
-    // width: 100,
-    overflow: 'hidden',
+    overflow: "hidden",
+    position: "relative",
+  },
+  scrollView: {
+    width: "100%",
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: "center",
+  },
+  selectionHighlight: {
+    position: "absolute",
+    top: "40%",
+    bottom: "40%",
+    left: 0,
+    right: 0,
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: Color.rgPrimary,
+    zIndex: 1,
+    pointerEvents: "none",
+  },
+  itemContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
   },
   numberItem: {
-    height: 50,
     fontSize: 18,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    color: '#d5d5d5',
+    textAlign: "center",
+    textAlignVertical: "center",
+    color: "#b9b9b9",
+    fontWeight: "500",
+    lineHeight: 50,
   },
   activeNumber: {
-    fontSize: 28,
+    fontSize: 22,
     color: Color.rgPrimary,
-    paddingHorizontal: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    fontWeight: 'bold',
-    borderRadius: 5,
+    fontWeight: "bold",
   },
   valueText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
     color: Color.rgPrimary,
   },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,47 +7,47 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 // import Svg, { Path, Circle } from 'react-native-Svg';
 // import MaleChar from '../../assets/images/Layer 41 1';
 // import FemaleChar from '../../assets/svg/femaleChar';
-import { Color, linearGradientColors } from '../../GlobalStyles';
-import { LinearGradient } from 'expo-linear-gradient';
-import MobileLogo from '../../components/ui/Register/MobileLogo';
-import ContinueButton from '../../components/ui/Register/ContinueButton';
-import CardTitle from '../../components/ui/Register/CardTitle';
+import { Color, linearGradientColors } from "../../GlobalStyles";
+import { LinearGradient } from "expo-linear-gradient";
+import MobileLogo from "../../components/ui/Register/MobileLogo";
+import ContinueButton from "../../components/ui/Register/ContinueButton";
+import CardTitle from "../../components/ui/Register/CardTitle";
 
 const GenderIcon = ({ type, selected, onPress }) => {
   const iconColor = selected ? Color.rgPrimary : Color.rgDisable;
   const backgroundColor = selected
-    ? 'rgba(255,255,255,0.8)'
-    : 'rgba(255,255,255,0.1)';
+    ? "rgba(255,255,255,0.8)"
+    : "rgba(255,255,255,0.1)";
   // 8178428798
   return (
     <TouchableOpacity
       style={[styles.genderIconContainer, { backgroundColor }]}
       onPress={onPress}
     >
-      {type === 'male' ? (
+      {type === "male" ? (
         <Image
-          source={require('../../assets/images/Layer 41 1.png')}
+          source={require("../../assets/images/Layer 41 1.png")}
           style={styles.images}
         />
       ) : (
         <Image
-          source={require('../../assets/images/FEMALE_V001.png')}
+          source={require("../../assets/images/FEMALE_V001.png")}
           style={styles.images}
         />
       )}
       <Text
         style={[
           styles.genderText,
-          { color: selected ? Color.rgPrimary : '#fff' },
+          { color: selected ? Color.rgPrimary : "#fff" },
         ]}
       >
-        {type === 'male' ? 'Male' : 'Female'}
+        {type === "male" ? "Male" : "Female"}
       </Text>
     </TouchableOpacity>
   );
@@ -73,7 +73,7 @@ const ThirdStepRegistration = () => {
   const handleContinue = () => {
     if (selectedGender) {
       router.push({
-        pathname: '/register/fourth-step',
+        pathname: "/register/fourth-step",
         params: {
           ...params,
           gender: selectedGender,
@@ -85,28 +85,27 @@ const ThirdStepRegistration = () => {
 
   return (
     <LinearGradient
-      style={{ flex: 1, width: '100%', height: '100%' }}
-      colors={['#0A0A0A', '#0A0A0A', '#0A0A0A']}
+      style={{ flex: 1, width: "100%", height: "100%" }}
+      colors={["#0A0A0A", "#0A0A0A", "#0A0A0A"]}
     >
       <View style={styles.container}>
-        
         <View style={styles.headerContainer}>
           <MobileLogo />
         </View>
 
         <View style={styles.formContainer}>
-          <CardTitle title={`Hi ${full_name || 'User'}, select your gender`} />
+          <CardTitle title={`Hi ${full_name || "User"}, select your gender`} />
 
           <View style={styles.genderSelectionContainer}>
             <GenderIcon
               type="male"
-              selected={selectedGender === 'Male'}
-              onPress={() => handleGenderSelection('Male')}
+              selected={selectedGender === "Male"}
+              onPress={() => handleGenderSelection("Male")}
             />
             <GenderIcon
               type="female"
-              selected={selectedGender === 'Female'}
-              onPress={() => handleGenderSelection('Female')}
+              selected={selectedGender === "Female"}
+              onPress={() => handleGenderSelection("Female")}
             />
           </View>
         </View>
@@ -114,7 +113,7 @@ const ThirdStepRegistration = () => {
         <ContinueButton
           isValid={selectedGender}
           handleSubmit={handleContinue}
-          text={'Continue'}
+          text={"Continue"}
         />
 
         <View style={styles.loginContainer}>
@@ -122,7 +121,7 @@ const ThirdStepRegistration = () => {
           <TouchableOpacity
             onPress={() =>
               router.push({
-                pathname: '/register/age-selector',
+                pathname: "/register/age-selector",
                 params: { ...params },
               })
             }
@@ -139,14 +138,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Color.rgBgContainer,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   headerContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   formContainer: {
     borderRadius: 15,
-    width: '100%',
+    width: "100%",
     marginBottom: 30,
   },
   images: {
@@ -154,37 +153,37 @@ const styles = StyleSheet.create({
     height: 140,
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   subtitle: {
     color: Color.rgDisable,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   genderSelectionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   genderIconContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 20,
     borderRadius: 15,
   },
   genderText: {
     marginTop: 10,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   nextButton: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: Color.rgPrimary,
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   disabledButton: {
     backgroundColor: Color.rgDisable,
@@ -192,12 +191,12 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: Color.rgTextSecondary,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginRight: 10,
   },
   loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 20,
   },
   loginText: {
@@ -205,7 +204,7 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     color: Color.rgPrimary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

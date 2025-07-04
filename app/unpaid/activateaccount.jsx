@@ -7,6 +7,8 @@ import {
   ScrollView,
   Image,
   Platform,
+  TouchableOpacity,
+  StatusBar,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import QRCode from "react-native-qrcode-svg";
@@ -94,7 +96,7 @@ export default function ActivateAccount({ route }) {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* <LinearGradient colors={["#8B5CF6", "#6D28D9"]} style={styles.header}>
           <Text style={styles.logoText}>
             <Text style={styles.logoFirstPart}>Fitt</Text>
@@ -102,10 +104,16 @@ export default function ActivateAccount({ route }) {
           </Text>
           <Text style={styles.headerTitle}>Activate Your Account</Text>
         </LinearGradient> */}
-      <NewOwnerHeader
-        text={"Manage Membership"}
-        onBackButtonPress={() => router.back()}
-      />
+      <View style={styles.headerContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={20} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Manage Membership</Text>
+        <View style={styles.headerRight} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.qrContainer}>
@@ -259,7 +267,7 @@ export default function ActivateAccount({ route }) {
           ""
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -267,6 +275,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
+    marginTop: Platform.OS === "ios" ? 0 : 30,
   },
   scrollContainer: {
     paddingBottom: 30,
@@ -466,5 +475,26 @@ const styles = StyleSheet.create({
   },
   logoSecondPart: {
     color: "#FFFFFF",
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eaeaea",
+  },
+  backButton: {
+    padding: 5,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  headerRight: {
+    width: 30,
   },
 });

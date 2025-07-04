@@ -8,29 +8,53 @@ export default function DietLayout() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="myListedFoodLogs" options={{ headerShown: false }} />
-      <Stack.Screen name="todayFoodLogPage" options={{ headerShown: false }} />
-      <Stack.Screen name="reportPage" options={{ headerShown: false }} />
-      <Stack.Screen name="personalTemplate" options={{ headerShown: false }} />
-      <Stack.Screen name="allfoods" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="myListedFoodLogs"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="todayFoodLogPage"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="reportPage"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="personalTemplate"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="allfoods"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
       <Stack.Screen
         name="addTemplateCategoryPage"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
-      <Stack.Screen name="logDiet" options={{ headerShown: false }} />
-      <Stack.Screen name="sampleTemplate" options={{ headerShown: false }} />
-      <Stack.Screen name="addFoodListPage" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="logDiet"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="sampleTemplate"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="addFoodListPage"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
       <Stack.Screen
         name="manualFoodSelector"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen
         name="newDefaultTemplateLogFoodPage"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen
         name="trainerAssignedTemplateLogDietPage"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
     </Stack>
   );

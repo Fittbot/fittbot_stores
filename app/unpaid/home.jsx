@@ -71,6 +71,7 @@ export default function Home() {
         return;
       }
       const response = await getUnsubscribedHomeAPI(client_id);
+      console.log(response);
       if (response?.status === 200) {
         setClientData(response?.data);
       } else {
@@ -265,6 +266,9 @@ export default function Home() {
               <FeaturesComponent
                 onViewPlans={handleViewPlans}
                 joinedGym={clientData?.joined}
+                freeTrail={clientData?.free_trial}
+                gym_id={clientData?.gym_id}
+                daysLeft={clientData?.days_left}
               />
             ) : activeTab === "mygym" ? (
               <MyGymComponent gymData={clientData} />
@@ -372,7 +376,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontFamily: Platform.OS === "ios" ? "Avenir" : "sans-serif",
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "bold",
     color: "#000000",
     borderRadius: 5,

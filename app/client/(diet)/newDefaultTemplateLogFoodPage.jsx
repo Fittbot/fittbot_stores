@@ -86,8 +86,8 @@ export const useDietTemplate = () => {
     } catch (error) {
       showToast({
         type: "error",
-        title: error || "Error fetching template",
-        desc: "Something went wrong.Please try again later",
+        title: "Not Found",
+        desc: "No Diet Data Found",
       });
     } finally {
       setIsLoading(false);

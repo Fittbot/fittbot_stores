@@ -106,7 +106,7 @@ export default function TabLayout() {
           tabBarInactiveTintColor: "#000000",
           headerShown: false,
           tabBarButton: HapticTab,
-          tabBarBackground: TabBarBackground,
+          // tabBarBackground: TabBarBackground,
           tabBarStyle: Platform.select({
             ios: {
               position: "absolute",
@@ -115,6 +115,9 @@ export default function TabLayout() {
               paddingTop: 5,
               height: 70,
               display: pathname.includes("/marketplace") ? "none" : "flex",
+              opacity: 1,
+              shadowColor: "transparent",
+              elevation: 0,
             },
             default: {
               backgroundColor: "#FFFFFF",
@@ -123,6 +126,8 @@ export default function TabLayout() {
               paddingTop: 5,
               height: 70,
               display: pathname.includes("/marketplace") ? "none" : "flex",
+              opacity: 1,
+              elevation: 0,
             },
           }),
           tabBarLabelStyle: {

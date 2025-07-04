@@ -8,20 +8,26 @@ export default function workoutLayout() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="personalTemplate" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="personalTemplate"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
       <Stack.Screen
         name="addExerciseTemplate"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen
         name="AddExerciseToTemplate"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen
         name="fittbotWorkoutPage"
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
-      <Stack.Screen name="gymTemplate" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="gymTemplate"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
     </Stack>
   );
 }

@@ -13,137 +13,164 @@ import WorkoutSelectionModal from "../Workout/WorkoutSelectionModal";
 
 const { width, height } = Dimensions.get("window");
 
-const goalTypes = [
-  {
-    id: "weight_loss",
-    title: "Weight Loss",
-    subtitle: "Lose Fat & Get Lean",
-    imagePath: require("../../../assets/images/diet/def_char_1.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "goal",
-    color: "#FF5757",
-  },
-  {
-    id: "weight_gain",
-    title: "Weight Gain",
-    subtitle: "Build Muscle & Size",
-    imagePath: require("../../../assets/images/diet/def_char_2.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "goal",
-    color: "#28A745",
-  },
-  {
-    id: "body_recomposition",
-    title: "Body Recomposition",
-    subtitle: "Lose Fat & Gain Muscle",
-    imagePath: require("../../../assets/images/diet/def_char_3.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "goal",
-    color: "#007BFF",
-  },
-];
-
-const weightLossIntensity = [
-  {
-    id: "mild",
-    title: "Mild Cut",
-    subtitle: "0.5-1kg/month",
-    imagePath: require("../../../assets/images/diet/def_char_1.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "intensity",
-    color: "#FFB84D",
-  },
-  {
-    id: "moderate",
-    title: "Moderate Cut",
-    subtitle: "1-3kg/month",
-    imagePath: require("../../../assets/images/diet/def_char_2.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "intensity",
-    color: "#FF8C42",
-  },
-  {
-    id: "aggressive",
-    title: "Aggressive Cut",
-    subtitle: "3-4kg/month",
-    imagePath: require("../../../assets/images/diet/def_char_3.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "intensity",
-    color: "#FF5757",
-  },
-];
-
-const weightGainIntensity = [
-  {
-    id: "lean_bulk",
-    title: "Lean Bulk",
-    subtitle: "0.5-1kg/month",
-    imagePath: require("../../../assets/images/diet/def_char_2.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "intensity",
-    color: "#90EE90",
-  },
-  {
-    id: "steady_bulk",
-    title: "Steady Bulk",
-    subtitle: "1-3kg/month",
-    imagePath: require("../../../assets/images/diet/def_char_3.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "intensity",
-    color: "#32CD32",
-  },
-  {
-    id: "power_bulk",
-    title: "Power Bulk",
-    subtitle: "3-4kg/month",
-    imagePath: require("../../../assets/images/diet/def_char_4.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "intensity",
-    color: "#228B22",
-  },
-];
-
-const foodCategory = [
-  {
-    id: "veg_south_indian",
-    title: "Vegetarian Food",
-    subtitle: "South Indian",
-    imagePath: require("../../../assets/images/diet/veg_icon.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "food",
-    color: "#28A745",
-  },
-  {
-    id: "veg_north_indian",
-    title: "Vegetarian Food",
-    subtitle: "North Indian",
-    imagePath: require("../../../assets/images/diet/veg_icon.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "food",
-    color: "#28A745",
-  },
-  {
-    id: "non_veg_south_indian",
-    title: "Non-Vegetarian Food",
-    subtitle: "South Indian",
-    imagePath: require("../../../assets/images/diet/non_veg_icon.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "food",
-    color: "#FF5757",
-  },
-  {
-    id: "non_veg_north_indian",
-    title: "Non-Vegetarian Food",
-    subtitle: "North Indian",
-    imagePath: require("../../../assets/images/diet/non_veg_icon.png"),
-    backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
-    key: "food",
-    color: "#FF5757",
-  },
-];
-
 const DietSelection = ({ gender }) => {
   const router = useRouter();
+
+  const goalTypes = [
+    {
+      id: "weight_loss",
+      title: "Weight Loss",
+      subtitle: "Lose Fat & Get Lean",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_1.png")
+          : require("../../../assets/images/diet/def_char_1_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goal",
+      color: "#FF5757",
+    },
+    {
+      id: "weight_gain",
+      title: "Weight Gain",
+      subtitle: "Build Muscle & Size",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_2.png")
+          : require("../../../assets/images/diet/def_char_2_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goal",
+      color: "#28A745",
+    },
+    {
+      id: "body_recomposition",
+      title: "Body Recomposition",
+      subtitle: "Lose Fat & Gain Muscle",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_3.png")
+          : require("../../../assets/images/diet/def_char_3_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goal",
+      color: "#007BFF",
+    },
+  ];
+
+  const weightLossIntensity = [
+    {
+      id: "mild",
+      title: "Mild Cut",
+      subtitle: "0.5-1kg/month",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_1.png")
+          : require("../../../assets/images/diet/def_char_1_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "intensity",
+      color: "#FFB84D",
+    },
+    {
+      id: "moderate",
+      title: "Moderate Cut",
+      subtitle: "1-3kg/month",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_2.png")
+          : require("../../../assets/images/diet/def_char_2_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "intensity",
+      color: "#FF8C42",
+    },
+    {
+      id: "aggressive",
+      title: "Aggressive Cut",
+      subtitle: "3-4kg/month",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_3.png")
+          : require("../../../assets/images/diet/def_char_3_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "intensity",
+      color: "#FF5757",
+    },
+  ];
+
+  const weightGainIntensity = [
+    {
+      id: "lean_bulk",
+      title: "Lean Bulk",
+      subtitle: "0.5-1kg/month",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_2.png")
+          : require("../../../assets/images/diet/def_char_2_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "intensity",
+      color: "#90EE90",
+    },
+    {
+      id: "steady_bulk",
+      title: "Steady Bulk",
+      subtitle: "1-3kg/month",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_3.png")
+          : require("../../../assets/images/diet/def_char_4_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "intensity",
+      color: "#32CD32",
+    },
+    {
+      id: "power_bulk",
+      title: "Power Bulk",
+      subtitle: "3-4kg/month",
+      imagePath:
+        gender?.toLowerCase() === "male"
+          ? require("../../../assets/images/diet/def_char_4.png")
+          : require("../../../assets/images/diet/def_char_3_f.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "intensity",
+      color: "#228B22",
+    },
+  ];
+
+  const foodCategory = [
+    {
+      id: "veg_south_indian",
+      title: "Vegetarian Food",
+      subtitle: "South Indian",
+      imagePath: require("../../../assets/images/diet/veg_icon.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "food",
+      color: "#28A745",
+    },
+    {
+      id: "veg_north_indian",
+      title: "Vegetarian Food",
+      subtitle: "North Indian",
+      imagePath: require("../../../assets/images/diet/veg_icon.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "food",
+      color: "#28A745",
+    },
+    {
+      id: "non_veg_south_indian",
+      title: "Non-Vegetarian Food",
+      subtitle: "South Indian",
+      imagePath: require("../../../assets/images/diet/non_veg_icon.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "food",
+      color: "#FF5757",
+    },
+    {
+      id: "non_veg_north_indian",
+      title: "Non-Vegetarian Food",
+      subtitle: "North Indian",
+      imagePath: require("../../../assets/images/diet/non_veg_icon.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "food",
+      color: "#FF5757",
+    },
+  ];
 
   // Modal visibility states
   const [showGoalTypeCard, setShowGoalTypeCard] = useState(false);

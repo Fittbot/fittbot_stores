@@ -16,6 +16,7 @@ import {
   ImageBackground,
   TouchableWithoutFeedback,
   Platform,
+  Keyboard,
 } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -29,6 +30,7 @@ import ExerciseCard from "../../components/ui/Workout/ExerciseCard";
 import { showToast } from "../../utils/Toaster";
 import GrainConfettiAnimation from "../../components/ui/ConfettiAnimation";
 import HardwareBackHandler from "../../components/HardwareBackHandler";
+import UnsavedChangesBackHandler from "../../components/WorkoutHardwareBackHandler";
 
 const { width, height } = Dimensions.get("window");
 const responsiveWidth = (percentage) => width * (percentage / 100);
@@ -79,6 +81,8 @@ const ExerciseScreen = () => {
     { reps: "", weight: "", duration: "" },
   ]);
   const [currentReps, setCurrentReps] = useState("");
+  const [isBackConfirmModalVisible, setIsBackConfirmModalVisible] =
+    useState(false);
   const [currentWeight, setCurrentWeight] = useState("");
   const [currentDuration, setCurrentDuration] = useState("");
   const [userWeight, setUserWeight] = useState(70);
@@ -98,7 +102,7 @@ const ExerciseScreen = () => {
     return isMuscleGroup == "true" ? 6 : 10;
   });
   const [durationUnits, setDurationUnits] = useState({});
-
+  const hasScrolledInitially = useRef(false);
   const [selectedDay, setSelectedDay] = useState(() => {
     const today = new Date();
     const days = [
@@ -312,6 +316,7 @@ const ExerciseScreen = () => {
             pathname: "/client/workout",
             params: { task: "exercise added" },
           });
+          setIsBackConfirmModalVisible(false);
           setIsSaveModalVisible(false);
           setXpRewardVisible(false);
         } else {
@@ -320,6 +325,7 @@ const ExerciseScreen = () => {
               pathname: "/client/workout",
               params: { task: "exercise added" },
             });
+            setIsBackConfirmModalVisible(false);
             setIsSaveModalVisible(false);
             setXpRewardVisible(false);
           }, 3000);
@@ -967,6 +973,41 @@ const ExerciseScreen = () => {
         showsHorizontalScrollIndicator={false}
         style={styles.dayTabsContainer}
         contentContainerStyle={styles.dayTabsContent}
+        onLayout={() => {
+          if (
+            !hasScrolledInitially.current &&
+            isDefaultWorkout &&
+            tabScrollViewRef.current
+          ) {
+            const days = [
+              { name: "Monday", value: "monday" },
+              { name: "Tuesday", value: "tuesday" },
+              { name: "Wednesday", value: "wednesday" },
+              { name: "Thursday", value: "thursday" },
+              { name: "Friday", value: "friday" },
+              { name: "Saturday", value: "saturday" },
+              { name: "Sunday", value: "sunday" },
+            ];
+
+            const index = days.findIndex((day) => day.value === selectedDay);
+            if (index !== -1) {
+              const { width } = Dimensions.get("window");
+              const approximateTabWidth = 100;
+              const scrollToX = Math.max(
+                0,
+                index * approximateTabWidth -
+                  width / 2 +
+                  approximateTabWidth / 2
+              );
+
+              tabScrollViewRef.current.scrollTo({
+                x: scrollToX,
+                animated: true,
+              });
+              hasScrolledInitially.current = true;
+            }
+          }
+        }}
       >
         {days.map((day) => (
           <TouchableOpacity
@@ -1015,8 +1056,27 @@ const ExerciseScreen = () => {
     }
   };
 
+  const hasUnsavedSets = () => {
+    return Object.values(activeExercises).some(
+      (exercise) => exercise.sets && exercise.sets.length > 0
+    );
+  };
+
+  const handleBackNavigation = () => {
+    if (hasUnsavedSets()) {
+      setIsBackConfirmModalVisible(true);
+    } else {
+      router.push(getBackNavigation());
+    }
+  };
+
+  const handleConfirmBackNavigation = () => {
+    setActiveExercises({});
+    setIsBackConfirmModalVisible(false);
+    router.push(getBackNavigation());
+  };
+
   useEffect(() => {
-    // Auto-scroll to current day when component mounts or selectedDay changes
     if (isDefaultWorkout && tabScrollViewRef.current) {
       const days = [
         { name: "Monday", value: "monday" },
@@ -1037,13 +1097,18 @@ const ExerciseScreen = () => {
           index * approximateTabWidth - width / 2 + approximateTabWidth / 2
         );
 
-        // Add a small delay to ensure the ScrollView is fully rendered
-        setTimeout(() => {
-          tabScrollViewRef.current?.scrollTo({ x: scrollToX, animated: true });
-        }, 100);
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            tabScrollViewRef.current?.scrollTo({
+              x: scrollToX,
+              animated: true,
+            });
+          }, 200); // Increased delay
+        });
       }
     }
-  }, [selectedDay, isDefaultWorkout]);
+  }, [selectedDay, isDefaultWorkout, tabScrollViewRef]);
 
   if (loading) {
     return <FitnessLoader page="workout2" />;
@@ -1053,7 +1118,12 @@ const ExerciseScreen = () => {
 
   return (
     <View style={styles.container}>
-      <HardwareBackHandler routePath={getBackNavigation()} enabled={true} />
+      <UnsavedChangesBackHandler
+        hasUnsavedChanges={hasUnsavedSets()}
+        enabled={true}
+        onShowConfirmModal={() => setIsBackConfirmModalVisible(true)}
+        routePath={getBackNavigation()}
+      />
 
       {toast.visible && (
         <View style={styles.toastContainer}>
@@ -1064,9 +1134,7 @@ const ExerciseScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.headerButton}
-          onPress={() => {
-            router.push(getBackNavigation());
-          }}
+          onPress={handleBackNavigation} // Changed from direct router.push
         >
           <Ionicons
             name="arrow-back"
@@ -1185,56 +1253,18 @@ const ExerciseScreen = () => {
             size={responsiveFontSize(50)}
             color="#CCCCCC"
           />
-          <Text style={styles.emptyTitle}>No Exercises Available</Text>
+          <Text style={styles.emptyTitle}>
+            {isDefaultWorkouts == "true"
+              ? "Rest day"
+              : "No Exercises Available"}
+          </Text>
           <Text style={styles.emptySubtitle}>
-            Check back soon for new exercises
+            {isDefaultWorkouts == "true"
+              ? "Come back tomorrow for new exercises"
+              : " Check back soon for new exercises"}
           </Text>
         </View>
       )}
-
-      {/* Info Modal - for viewing GIFs */}
-      {/* <Modal
-                visible={infoModalVisible}
-                transparent
-                animationType="fade"
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{currentExercise}</Text>
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={() => setInfoModalVisible(false)}
-                            >
-                                <Ionicons name="close" size={responsiveFontSize(24)} color="#FFF" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.modalContentContainer}>
-                            {gifPath ? (
-                                <Image
-                                    source={gifPath}
-                                    style={styles.exerciseGif}
-                                    contentFit="contain"
-                                    isAnimated={true}
-                                />
-                            ) : (
-                                <View style={styles.noGifContainer}>
-                                    <FontAwesome5 name="exclamation-circle" size={responsiveFontSize(40)} color="#DDD" />
-                                    <Text style={styles.noGifText}>Animation Coming Soon!</Text>
-                                </View>
-                            )}
-
-                            <TouchableOpacity
-                                style={styles.closeModalButton}
-                                onPress={() => setInfoModalVisible(false)}
-                            >
-                                <Text style={styles.closeModalButtonText}>CLOSE</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal> */}
 
       <Modal visible={infoModalVisible} transparent animationType="fade">
         <View style={exerciseVisualModalStyles.exrMdlBackdropOverlay}>
@@ -1305,7 +1335,7 @@ const ExerciseScreen = () => {
 
       {/* Input Modal - for entering set details */}
       <Modal visible={inputModalVisible} transparent animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setInputModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View style={styles.modalContentSave}>
@@ -1536,12 +1566,12 @@ const ExerciseScreen = () => {
                           ? [
                               { label: "Low Intensity", value: 4 },
                               { label: "Moderate Intensity", value: 6 },
-                              { label: "Vigorous Intensity", value: 8 },
+                              { label: "High Intensity", value: 8 },
                             ]
                           : [
                               { label: "Low Intensity", value: 8 },
                               { label: "Moderate Intensity", value: 10 },
-                              { label: "Vigorous Intensity", value: 12 },
+                              { label: "High Intensity", value: 12 },
                             ]
                       }
                       Icon={() => (
@@ -1582,9 +1612,7 @@ const ExerciseScreen = () => {
 
       {/* Historical Input Modal */}
       <Modal visible={historicalInputVisible} transparent animationType="slide">
-        <TouchableWithoutFeedback
-          onPress={() => setHistoricalInputVisible(false)}
-        >
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback
               onPress={(e) => {
@@ -1962,7 +1990,7 @@ const ExerciseScreen = () => {
                                   ? [
                                       { label: "Low Intensity", value: 4 },
                                       { label: "Moderate Intensity", value: 6 },
-                                      { label: "Vigorous Intensity", value: 8 },
+                                      { label: "High Intensity", value: 8 },
                                     ]
                                   : [
                                       { label: "Low Intensity", value: 8 },
@@ -1971,7 +1999,7 @@ const ExerciseScreen = () => {
                                         value: 10,
                                       },
                                       {
-                                        label: "Vigorous Intensity",
+                                        label: "High Intensity",
                                         value: 12,
                                       },
                                     ]
@@ -2043,8 +2071,8 @@ const ExerciseScreen = () => {
             </View>
 
             <Text style={styles.saveModalText}>
-              Ready to save your workout for {muscleGroup}? Your progress will
-              be recorded and you'll earn XP rewards!
+              Ready to save your workout? Your progress will be recorded{" "}
+              {isInGym ? "and you'll earn XP rewards!" : "for your analysis"}
             </Text>
 
             {xpRewardVisible ? (
@@ -2080,6 +2108,73 @@ const ExerciseScreen = () => {
             </View>
           </View>
         </View>
+      </Modal>
+
+      <Modal
+        visible={isBackConfirmModalVisible}
+        transparent
+        animationType="slide"
+      >
+        <TouchableWithoutFeedback
+          onPress={() => setIsBackConfirmModalVisible(false)}
+        >
+          <View style={styles.modalOverlaySave}>
+            <TouchableWithoutFeedback
+              onPress={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <View style={styles.modalContentSave}>
+                {/* Header with X button */}
+                <View style={styles.modalHeaderDiscard}>
+                  <View style={{ flex: 1 }} />
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => setIsBackConfirmModalVisible(false)}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={responsiveFontSize(20)}
+                      color="#FFF"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Content */}
+                <View style={styles.saveModalHeader}>
+                  <Ionicons
+                    name="warning-outline"
+                    size={responsiveFontSize(40)}
+                    color="#FF9500"
+                  />
+                  <Text style={styles.saveModalTitle}>Unsaved Changes</Text>
+                </View>
+
+                <Text style={styles.saveModalText}>
+                  You have unsaved workout data. Do you want to save your
+                  progress before leaving?
+                </Text>
+
+                {/* Action buttons */}
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={handleConfirmBackNavigation}
+                  >
+                    <Text style={styles.modalButtonText}>DISCARD</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.confirmButton]}
+                    onPress={saveWorkout}
+                  >
+                    <Text style={styles.modalButtonText}>SAVE</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -2408,6 +2503,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: responsiveWidth(4),
     backgroundColor: "#FF5757",
+  },
+  modalHeaderDiscard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    // backgroundColor: "#FF5757",
   },
   modalTitle: {
     color: "#000",

@@ -106,6 +106,7 @@ const WorkoutSelection = (props) => {
   const [selections, setSelections] = useState({
     workoutType: null,
     gender: "male",
+    goals: null,
     level: null,
   });
 
@@ -230,11 +231,134 @@ const WorkoutSelection = (props) => {
     },
   ];
 
+  const goalOptions = [
+    {
+      id: "weight_gain",
+      title: "Weight Gain",
+      subtitle: "Build muscle and gain healthy weight",
+      imagePath: require("../../../assets/images/BEGINNER (1).png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goals",
+    },
+    {
+      id: "weight_loss",
+      title: "Weight Loss",
+      subtitle: "Burn fat and get leaner",
+      imagePath: require("../../../assets/images/INTERMEDIATE.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goals",
+    },
+    {
+      id: "body_recomposition",
+      title: "Body Recomposition",
+      subtitle: "Build muscle while losing fat",
+      imagePath: require("../../../assets/images/ATHLETE (1).png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goals",
+    },
+  ];
+
+  const goalOptionsFemale = [
+    {
+      id: "weight_gain",
+      title: "Weight Gain",
+      subtitle: "Build muscle and gain healthy weight",
+      imagePath: require("../../../assets/images/workout/BEGINNER.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goals",
+    },
+    {
+      id: "weight_loss",
+      title: "Weight Loss",
+      subtitle: "Burn fat and get leaner",
+      imagePath: require("../../../assets/images/workout/GENDER_SELECTION_FEMALE.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goals",
+    },
+    {
+      id: "body_recomposition",
+      title: "Body Recomposition",
+      subtitle: "Build muscle while losing fat",
+      imagePath: require("../../../assets/images/workout/athlete.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "goals",
+    },
+  ];
+  const weightLossLevelsMale = [
+    {
+      id: "beginner",
+      title: "Extreme Fat Loss",
+      subtitle: "Lose 20kg+",
+      imagePath: require("../../../assets/images/BEGINNER (1).png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+    {
+      id: "intermediate",
+      title: "Major Fat Loss",
+      subtitle: "Lose 10-20kg",
+      imagePath: require("../../../assets/images/INTERMEDIATE.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+    {
+      id: "athlete",
+      title: "Power Shred",
+      subtitle: "Lose 5-10kg",
+      imagePath: require("../../../assets/images/ATHLETE (1).png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+    {
+      id: "expert",
+      title: "Ultimate Shred",
+      subtitle: "Lose 5kg",
+      imagePath: require("../../../assets/images/EXPERT (2).png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+  ];
+
+  const weightLossLevelsFemale = [
+    {
+      id: "beginner",
+      title: "Extreme Fat Loss",
+      subtitle: "Lose 20kg+",
+      imagePath: require("../../../assets/images/workout/BEGINNER.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+    {
+      id: "intermediate",
+      title: "Major Fat Loss",
+      subtitle: "Lose 10-20kg",
+      imagePath: require("../../../assets/images/workout/GENDER_SELECTION_FEMALE.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+    {
+      id: "athlete",
+      title: "Power Shred",
+      subtitle: "Lose 5-10kg",
+      imagePath: require("../../../assets/images/workout/athlete.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+    {
+      id: "expert",
+      title: "Ultimate Shred",
+      subtitle: "Lose 5kg",
+      imagePath: require("../../../assets/images/workout/ATHLETE (1) 1.png"),
+      backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
+      key: "level",
+    },
+  ];
+
   const experienceLevelsMale = [
     {
       id: "beginner",
       title: "Beginner",
-      subtitle: "Every Expert Was Here",
+      subtitle: "New to gyms.Gain 10kg+",
       imagePath: require("../../../assets/images/BEGINNER (1).png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -242,7 +366,7 @@ const WorkoutSelection = (props) => {
     {
       id: "intermediate",
       title: "Intermediate",
-      subtitle: "You’re Not New Anymore",
+      subtitle: "You’re Not New Anymore.Gain 5-10kg",
       imagePath: require("../../../assets/images/INTERMEDIATE.png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -250,7 +374,7 @@ const WorkoutSelection = (props) => {
     {
       id: "athlete",
       title: "Athlete",
-      subtitle: "Built by Discipline",
+      subtitle: "Power Bulk.Gain 3-5kg",
       imagePath: require("../../../assets/images/ATHLETE (1).png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -258,7 +382,7 @@ const WorkoutSelection = (props) => {
     {
       id: "expert",
       title: "Expert",
-      subtitle: "You Know the Game. Now Own It.",
+      subtitle: "You Know the Game.Gain 0-3kg",
       imagePath: require("../../../assets/images/EXPERT (2).png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -269,7 +393,7 @@ const WorkoutSelection = (props) => {
     {
       id: "beginner",
       title: "Beginner",
-      subtitle: "Every Expert Was Here",
+      subtitle: "New to gyms.Gain 6kg+",
       imagePath: require("../../../assets/images/workout/BEGINNER.png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -277,7 +401,7 @@ const WorkoutSelection = (props) => {
     {
       id: "intermediate",
       title: "Intermediate",
-      subtitle: "You’re Not New Anymore",
+      subtitle: "You’re Not New Anymore.Gain 3-6kg",
       imagePath: require("../../../assets/images/workout/GENDER_SELECTION_FEMALE.png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -285,7 +409,7 @@ const WorkoutSelection = (props) => {
     {
       id: "athlete",
       title: "Athlete",
-      subtitle: "Built by Discipline",
+      subtitle: "Built by Discipline.Gain 1.5-3kg",
       imagePath: require("../../../assets/images/workout/athlete.png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -293,7 +417,7 @@ const WorkoutSelection = (props) => {
     {
       id: "expert",
       title: "Expert",
-      subtitle: "You Know the Game. Now Own It.",
+      subtitle: "You Know the Game.Gain 0-1.5kg",
       imagePath: require("../../../assets/images/workout/ATHLETE (1) 1.png"),
       backGroundPath: require("../../../assets/images/diet/bot_icon.png"),
       key: "level",
@@ -328,15 +452,64 @@ const WorkoutSelection = (props) => {
 
   const [selectedItems, setSelectedItems] = useState(genderOptions);
 
-  const handleSelection = async (type, value) => {
+  const handleSelection = async (type, value, title) => {
     if (type == "gender") {
       setSelections({
         ...selections,
         gender: value,
       });
-      setSelectedItems(
-        value == "male" ? experienceLevelsMale : experienceLevelsFemale
-      );
+      // Set goal options based on selected gender
+      setSelectedItems(value === "female" ? goalOptionsFemale : goalOptions);
+    } else if (type == "goals") {
+      setSelections({
+        ...selections,
+        goals: value,
+      });
+
+      if (value === "body_recomposition") {
+        // Skip level selection for body recomposition
+        setCurrentModalType(false);
+        try {
+          const response = await getDefaultWorkoutAPI(
+            selections.gender,
+            "athlete",
+            value
+          );
+          if (response?.status == 200) {
+            router.push({
+              pathname: "/client/exercise",
+              params: {
+                exercises: JSON.stringify(response?.data),
+                isDefaultWorkouts: true,
+                goals: value,
+                gender: selections.gender,
+                level: "Body Recomposition",
+              },
+            });
+          }
+        } catch (error) {
+          showToast({
+            type: "error",
+            title: "Error",
+            desc: "Something went wrong. Please try again later",
+          });
+        }
+      } else {
+        // Show level selection based on gender and goals
+        if (value === "weight_gain") {
+          setSelectedItems(
+            selections.gender === "male"
+              ? experienceLevelsMale
+              : experienceLevelsFemale
+          );
+        } else if (value === "weight_loss") {
+          setSelectedItems(
+            selections.gender === "male"
+              ? weightLossLevelsMale
+              : weightLossLevelsFemale
+          );
+        }
+      }
     } else if (type == "level") {
       setSelections({
         ...selections,
@@ -344,15 +517,20 @@ const WorkoutSelection = (props) => {
       });
       setCurrentModalType(false);
       try {
-        const response = await getDefaultWorkoutAPI(selections.gender, value);
+        const response = await getDefaultWorkoutAPI(
+          selections.gender,
+          value,
+          selections.goals
+        );
         if (response?.status == 200) {
           router.push({
             pathname: "/client/exercise",
             params: {
               exercises: JSON.stringify(response?.data),
               isDefaultWorkouts: true,
-              level: value,
-              gender: gender,
+              level: title,
+              goals: selections.goals,
+              gender: selections.gender,
             },
           });
         }
@@ -649,47 +827,6 @@ const WorkoutSelection = (props) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
-
-  // const handleGymEntry = async () => {
-  //   if (checkingLocation) return;
-  //   setErrorMsg(null);
-  //   setCheckingLocation(true);
-
-  //   try {
-  //     const position = await getCurrentPositionAsync({
-  //       accuracy: Platform.OS === "android" ? 1 : 0,
-  //       maximumAge: 10000,
-  //       timeout: 5000,
-  //     });
-
-  //     const distance = calculateDistance(
-  //       position.coords.latitude,
-  //       position.coords.longitude,
-  //       gymLocation.latitude,
-  //       gymLocation.longitude
-  //     );
-
-  //     if (distance <= ALLOWED_DISTANCE) {
-  //       await punchIn();
-  //     } else {
-  //       showToast({
-  //         type: "error",
-  //         title: "Location Error",
-  //         desc: "You are not at the gym. Please punch in only when you are inside the gym.",
-  //       });
-  //       setEntryModalVisible(false);
-  //     }
-  //   } catch (error) {
-  //     showToast({
-  //       type: "error",
-  //       title: "Location Error",
-  //       desc: "Could not get your location. Please try again later",
-  //     });
-  //     setEntryModalVisible(false);
-  //   } finally {
-  //     setCheckingLocation(false);
-  //   }
-  // };
 
   const handleGymEntry = async () => {
     if (checkingLocation) return;

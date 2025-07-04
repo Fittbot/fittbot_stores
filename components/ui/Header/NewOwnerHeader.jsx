@@ -9,7 +9,7 @@ const NewOwnerHeader = ({ onBackButtonPress, text }) => {
     <SafeAreaView>
       <View style={styles.header}>
         <TouchableOpacity style={styles.icon} onPress={onBackButtonPress}>
-          <Ionicons name="arrow-back-outline" size={20}></Ionicons>
+          <Ionicons name="arrow-back-outline" size={22}></Ionicons>
         </TouchableOpacity>
 
         <View style={{ width: "100%" }}>

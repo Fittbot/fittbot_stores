@@ -17,6 +17,20 @@ export const clientHomeAPI = async (payload) => {
   }
 };
 
+export const clientMyGymAPI = async (payload) => {
+  try {
+    const res = await axiosInstance.get(`/my_gym/get_other_details`, {
+      params: {
+        gym_id: payload.gym_id,
+        client_id: payload.client_id,
+      },
+    });
+    return res?.data;
+  } catch (err) {
+    return err?.response.data;
+  }
+};
+
 export const clientProgressAPI = async (payload) => {
   try {
     const res = await axiosInstance.get(`/my_progress/data`, {
@@ -975,14 +989,18 @@ export const hasMediainPostAPI = async (payload) => {
   }
 };
 
-export const getDefaultWorkoutAPI = async (gender, level) => {
+export const getDefaultWorkoutAPI = async (gender, level, goals) => {
   try {
-    const res = await axiosInstance.get(`/client/get_default_workout`, {
-      params: {
-        gender,
-        level,
-      },
-    });
+    const res = await axiosInstance.get(
+      `/default_workout_template/get_default_workout`,
+      {
+        params: {
+          gender,
+          level,
+          goals,
+        },
+      }
+    );
     return res?.data;
   } catch (err) {
     return err?.response.data;
@@ -1080,14 +1098,17 @@ export const getNewDefaultDietTemplate = async ({
   goal_type,
 }) => {
   try {
-    const res = await axiosInstance.get(`/client/get_single_fittbot_template`, {
-      params: {
-        client_id,
-        expertise_level,
-        cousine,
-        goal_type,
-      },
-    });
+    const res = await axiosInstance.get(
+      `/default_diet_template/get_single_fittbot_template`,
+      {
+        params: {
+          client_id,
+          expertise_level,
+          cousine,
+          goal_type,
+        },
+      }
+    );
     return res?.data;
   } catch (err) {
     return err?.response.data;
@@ -1100,5 +1121,29 @@ export const getDefaultDietTemplate = async () => {
     return res?.data;
   } catch (err) {
     return err?.response.data;
+  }
+};
+
+export const availFreeTrial = async (payload) => {
+  try {
+    const res = await axiosInstance.post(
+      `/free_trial/avail_free_trial`,
+      payload
+    );
+    return res?.data;
+  } catch (err) {
+    return err?.response?.data;
+  }
+};
+
+export const allowDataSharingAPI = async (payload) => {
+  try {
+    const res = await axiosInstance.post(
+      `/my_gym/toggling_data_sharing`,
+      payload
+    );
+    return res?.data;
+  } catch (err) {
+    return err?.response?.data;
   }
 };

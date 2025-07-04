@@ -26,10 +26,11 @@ const OTPVerificationScreen = () => {
   const lastVerifiedOTP = useRef(null);
   const router = useRouter();
   const mobile_number = JSON.parse(mobile);
+  const [entering, setEntering] = useState(false);
 
   const handleOTPComplete = (otp) => {
     setOtpValue(otp);
-
+    setEntering(true);
     // Only auto-verify if:
     // 1. OTP is complete (6 digits)
     // 2. Not currently loading
@@ -86,7 +87,7 @@ const OTPVerificationScreen = () => {
 
   const handleVerify = async (manualOtp = null) => {
     const otpToVerify = manualOtp || otpValue;
-
+    setEntering(true);
     if (!otpToVerify) return;
 
     try {
@@ -191,6 +192,7 @@ const OTPVerificationScreen = () => {
       setTimeout(() => {
         setIsLoading(false);
       }, 2800);
+      setEntering(false);
     }
   };
 
@@ -231,9 +233,9 @@ const OTPVerificationScreen = () => {
           !otpValue ? styles.verifyButtonDisabled : styles.verifyButtonEnabled,
         ]}
         onPress={() => handleVerify()}
-        disabled={!otpValue || isLoading}
+        disabled={!otpValue || entering}
       >
-        {isLoading ? (
+        {entering ? (
           <Animatable.View
             animation="pulse"
             easing="ease-out"

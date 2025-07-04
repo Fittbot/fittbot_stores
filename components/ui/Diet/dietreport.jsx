@@ -210,6 +210,8 @@ const DietReport = (props) => {
             mode="date"
             display={Platform.OS === "ios" ? "spinner" : "default"}
             onChange={showDate}
+            themeVariant="light"
+            textColor="#000000"
             maximumDate={today}
             style={Platform.OS === "ios" ? styles.iosDatePicker : {}}
           />

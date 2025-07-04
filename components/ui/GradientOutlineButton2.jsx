@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 const GradientOutlineButton2 = ({
   title = "100 ml",
   onPress = () => {},
-  colors = ["#1DE9B6", "#1E88E5"],
+  colors = ["#23C6D3", "#006FAD"],
   start = { x: 0, y: 0 },
   end = { x: 1, y: 0 },
   style = {},

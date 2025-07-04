@@ -42,7 +42,7 @@ export const useNetworkStatusExpo = () => {
     }, 30000);
 
     return () => {
-      unsubscribe?.();
+      unsubscribe?.remove();
       clearInterval(interval);
       // Clean up the callback
       setNetworkStatusCallback(null);

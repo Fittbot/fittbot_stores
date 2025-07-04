@@ -30,7 +30,8 @@ Notifications.setNotificationHandler({
     const channel = notification.request.content.data?.channel || "default";
 
     return {
-      shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
       shouldPlaySound: true,
       shouldSetBadge: true,
       shouldHandleActionButtons: true,
@@ -195,8 +196,8 @@ export default function RootLayout() {
       });
 
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener);
-      Notifications.removeNotificationSubscription(responseListener);
+      notificationListener.remove();
+      responseListener.remove();
     };
   }, []);
 
@@ -254,19 +255,22 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen
               name="client/(tabs)"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/(diet)"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/(workout)"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
 
             <Stack.Screen name="+not-found" />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="index"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
             <Stack.Screen
               name="forgotpassword"
               options={{ headerShown: false }}
@@ -281,7 +285,7 @@ export default function RootLayout() {
             {/* ---------------------- registration routes ---------------------- */}
             <Stack.Screen
               name="register/index"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="register/second-step"
@@ -311,11 +315,11 @@ export default function RootLayout() {
             {/* ---------------------- subscribed client routes ---------------------- */}
             <Stack.Screen
               name="OtpVerification"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/exercise"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/subscription"
@@ -323,7 +327,7 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="client/paynow"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/referral"
@@ -332,11 +336,11 @@ export default function RootLayout() {
             <Stack.Screen name="client/help" options={{ headerShown: false }} />
             <Stack.Screen
               name="client/transformation"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/addimage"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/profile"
@@ -345,7 +349,7 @@ export default function RootLayout() {
 
             <Stack.Screen
               name="client/allcharts"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/clientfeedback"
@@ -353,11 +357,11 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="client/sessionchat"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/viewjourney"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
             <Stack.Screen
               name="client/preferences"
@@ -369,18 +373,21 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="client/deleteaccount"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
 
             {/* ---------------------- Unsubscribed client routes ---------------------- */}
-            <Stack.Screen name="unpaid/home" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="unpaid/home"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
             <Stack.Screen
               name="unpaid/activateaccount"
               options={{ headerShown: false }}
             />
             <Stack.Screen
               name="unpaid/profile"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, gestureEnabled: false }}
             />
           </Stack>
           <StatusBar style="auto" />

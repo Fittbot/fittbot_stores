@@ -11,6 +11,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
 import { Image } from "expo-image";
+import MaskedView from "@react-native-masked-view/masked-view";
 
 const GradientButton3 = ({
   title = "Demo Text",
@@ -24,6 +25,8 @@ const GradientButton3 = ({
   mainContainerStyle = {},
   edit,
   onPress,
+  spanStyle = {},
+  borderStyle = {},
 }) => {
   return (
     <View
@@ -76,11 +79,12 @@ const GradientButton3 = ({
               styles.button,
               containerStyle,
               { justifyContent: edit ? "space-between" : "center" },
+              borderStyle,
             ]}
           >
             <View>
               <Text style={[styles.text, textStyle]}>{title}</Text>
-              {span && <Text style={[styles.span]}>{span}</Text>}
+              {span && <Text style={[styles.span, spanStyle]}>{span}</Text>}
             </View>
             {edit && (
               <View>
@@ -107,7 +111,7 @@ export default GradientButton3;
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 4,
     paddingHorizontal: 20,
     // borderWidth: 0.5,

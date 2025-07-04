@@ -33,7 +33,7 @@ const WorkoutSelectionModal = ({
 }) => {
   const renderListItem = ({ item }) => (
     <TouchableOpacity
-      onPress={() => handleSelection(item.key, item.id)}
+      onPress={() => handleSelection(item.key, item.id, item.title)}
       style={styles.wrapper}
     >
       <LinearGradient
